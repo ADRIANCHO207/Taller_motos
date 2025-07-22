@@ -1,0 +1,74 @@
+/* estilos Header */
+
+a .img {
+    width: 100px;
+    height: auto;
+}
+
+.img {
+    width: 100%;
+    height: auto;
+    padding-top: 15px;
+    
+}
+
+/*
+ * ===================================================================
+ *  SCROLL INDEPENDIENTE PARA EL SIDEBAR (SOLO EN ESCRITORIO)
+ * ===================================================================
+*/
+
+/* Aplica estos estilos solo para pantallas con un ancho mínimo de 768px */
+@media (min-width: 768px) {
+  
+  /* Hacemos que la barra lateral sea "pegajosa" y tenga la altura de la pantalla */
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh; /* 100% de la altura visible de la ventana */
+  }
+
+  /* 
+    El contenedor de la lista de menús es el que realmente debe tener el scroll,
+    esto es más robusto que aplicarlo a todo el .sidebar.
+    Usamos el ID #accordionSidebar que es el <ul> principal.
+  */
+  #accordionSidebar {
+    overflow-y: auto;   /* ¡La magia! Muestra el scroll vertical SOLO si el contenido es más alto */
+    overflow-x: hidden; /* Oculta el scroll horizontal */
+  }
+
+  /*
+   * --- ESTILOS PARA UNA BARRA DE SCROLL SUTIL Y MODERNA ---
+   * Hacemos que la barra de scroll sea delgada y poco notoria.
+  */
+
+  /* Para navegadores WebKit (Chrome, Safari, Edge, Opera) */
+  #accordionSidebar::-webkit-scrollbar {
+    width: 6px; /* Ancho de toda la barra de scroll */
+  }
+
+  #accordionSidebar::-webkit-scrollbar-track {
+    background: transparent; /* Hacemos la "pista" invisible */
+  }
+
+  #accordionSidebar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2); /* Color del "pulgar" del scroll, muy sutil */
+    border-radius: 20px; /* Bordes redondeados */
+    border: 1px solid rgba(0, 0, 0, 0.2); /* Un borde casi invisible para darle profundidad */
+  }
+
+  /* Para Firefox */
+  #accordionSidebar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+}
+
+/* estilos administradores */
+
+#form-alert-container .alert {
+    display: none; /* Oculto por defecto */
+    width: 100%;
+    margin-bottom: 0;
+}

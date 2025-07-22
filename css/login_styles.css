@@ -1,0 +1,215 @@
+/* --- Estilos Generales --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* Asegúrate de que la ruta a tu imagen de fondo sea correcta */
+    background-image: url('../img/taller.png'); 
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333;
+}
+
+/* --- Contenedor Principal del Login --- */
+.login-container {
+    padding: 20px;
+}
+
+.login-box {
+    display: flex;
+    width: 850px; /* Ancho para pantallas de escritorio */
+    max-width: 90vw; /* El ancho máximo no superará el 90% de la pantalla */
+    min-height: 550px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    overflow: hidden; /* Muy importante para que los bordes afecten a los paneles internos */
+}
+
+/* --- Panel Izquierdo (Logo) --- */
+.login-logo-panel {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff; /* Fondo blanco sólido para el logo */
+}
+
+.login-logo-panel img {
+    width: 80%;
+    max-width: 300px;
+}
+
+/* --- Panel Derecho (Formulario) - ¡LA MAGIA ESTÁ AQUÍ! --- */
+.login-form-panel {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 40px;
+    
+    /* 1. Fondo blanco con 85% de opacidad. NO afecta a los hijos. */
+    background-color: rgba(255, 255, 255, 0.50);
+
+    /* 2. El efecto de "vidrio esmerilado" que difumina el fondo. */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); /* Para compatibilidad con Safari */
+    
+    /* Un borde sutil para definir el área del formulario */
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* --- Estilos del Formulario (sin cambios importantes) --- */
+#loginForm {
+    width: 100%;
+    max-width: 350px;
+    text-align: center;
+}
+
+#loginForm h2 {
+    font-size: 2.2em; /* Un poco más grande */
+    margin-bottom: 30px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px 20px;
+    border: 1px solid #ccc;
+    background-color: #fff; /* Aseguramos que los inputs sean sólidos */
+    border-radius: 8px;
+    font-size: 1em;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #5a67d8;
+    box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.3);
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 14px;
+    background-color: #5a67d8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+button[type="submit"]:hover {
+    background-color: #434190;
+}
+
+.extra-links {
+    margin-top: 25px;
+}
+
+.extra-links a {
+    color: #434190;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+/* --- Estilos de Validación (CORREGIDOS Y MEJORADOS) --- */
+
+.input-group {
+    position: relative;
+    /* ¡NUEVO! Hacemos que el contenedor del input use Flexbox */
+    display: flex;
+    align-items: center; /* ¡LA MAGIA! Esto centra verticalmente todos los hijos */
+}
+
+/* El input debe ocupar todo el espacio posible */
+.input-group input {
+
+    flex-grow: 1; /* El input se expande para llenar el espacio */
+}
+
+.validation-icon {
+    position: absolute; /* Mantenemos la posición absoluta para ponerlo a la derecha */
+    right: 15px;
+    /* Quitamos el transform, ya no es necesario gracias a Flexbox */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none; /* Evita que el icono interfiera con el clic en el input */
+}
+
+.input-group.valid .validation-icon,
+.input-group.invalid .validation-icon {
+    opacity: 1;
+}
+
+.input-group.valid input {
+    border: solid 3px #28a745;
+    /* Añadimos un poco más de padding a la derecha para que el texto no se monte sobre el icono */
+    padding-right: 40px; 
+}
+
+.input-group.valid .validation-icon {
+    color: #28a745;
+}
+
+.input-group.invalid input {
+    border: solid 3px #dc3545;
+    /* Añadimos un poco más de padding a la derecha para que el texto no se monte sobre el icono */
+    padding-right: 40px;
+}
+
+.input-group.invalid .validation-icon {
+    color: #dc3545;
+}
+
+.error-message {
+    position: absolute; /* Posicionamos el mensaje de error debajo del input */
+    top: 100%;
+    left: 0;
+    color: #dc3545;
+    font-size: 0.8em;
+    display: block;
+}
+
+/*
+ * ===============================================
+ *  DISEÑO RESPONSIVO PARA TODOS LOS DISPOSITIVOS
+ * ===============================================
+*/
+
+/* Para tablets y móviles (pantallas de hasta 850px de ancho) */
+@media (max-width: 850px) {
+    .login-box {
+        flex-direction: column; /* Apila los paneles verticalmente */
+        width: 90vw;
+        max-width: 450px; /* Un buen ancho para un formulario en móvil */
+        min-height: auto; /* La altura será automática */
+    }
+
+    /* Ocultamos el logo en móviles para dar prioridad al formulario */
+    .login-logo-panel {
+        display: none; 
+    }
+
+    .login-form-panel {
+        border-left: none; /* Quitamos el borde que ya no tiene sentido */
+    }
+}
