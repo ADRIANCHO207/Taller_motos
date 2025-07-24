@@ -1,113 +1,113 @@
 <?php
+// ajax/procesar_marca.php (VERSIÓN FINAL CON PDO Y AUDITORÍA)
+session_start();
 header('Content-Type: application/json');
-$conexion = new mysqli('localhost', 'root', '', 'taller_motos');
+require_once __DIR__ . '/../../conecct/conex.php';
 
-if ($conexion->connect_error) {
-    echo json_encode(['status' => 'error', 'message' => 'Error de conexión.']);
-    exit;
-}
+$db = new Database();
+$conexion = $db->conectar(); // $conexion es un objeto PDO
 
-// ¡CORRECCIÓN! El nombre de la columna en tu BD es 'marcas' (plural), lo usaremos consistentemente.
-$nombre_columna = 'marcas'; 
-$accion = $_POST['accion'] ?? '';
+// Establecer la variable de sesión de MySQL para los Triggers
+$id_admin_actual = $_SESSION['id_documento'] ?? 'sistema';
+$stmt_session_var = $conexion->prepare("SET @current_admin_id = ?");
+$stmt_session_var->execute([$id_admin_actual]);
+
+$accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
+$nombre_columna = 'marcas'; // El nombre de tu columna
+$regex_letras = '/^[A-Za-zÑñÁáÉéÍíÓóÚú\s]+$/';
 
 switch ($accion) {
     case 'agregar':
         $marca = trim($_POST['marca'] ?? '');
+
+        // Validaciones
         if (empty($marca)) {
             echo json_encode(['status' => 'error', 'message' => 'El nombre de la marca no puede estar vacío.']);
             exit;
         }
-
-        // Validación de solo letras en el backend
-        if (!preg_match('/^[A-Za-zÑñÁáÉéÍíÓóÚú\s]+$/', $marca)) {
+        if (!preg_match($regex_letras, $marca)) {
             echo json_encode(['status' => 'error', 'message' => 'El nombre de la marca solo puede contener letras y espacios.']);
             exit;
         }
 
-        // ¡CORRECCIÓN! Compara en minúsculas para evitar duplicados como "Honda" y "honda"
-        $stmt_check = $conexion->prepare("SELECT id_marca FROM marcas WHERE LOWER($nombre_columna) = LOWER(?)");
-        $stmt_check->bind_param("s", $marca);
-        $stmt_check->execute();
-        if ($stmt_check->get_result()->num_rows > 0) {
+        // Verificar duplicados (case-insensitive)
+        $stmt = $conexion->prepare("SELECT id_marca FROM marcas WHERE LOWER($nombre_columna) = LOWER(:marca)");
+        $stmt->execute([':marca' => $marca]);
+        if ($stmt->fetch()) {
             echo json_encode(['status' => 'error', 'message' => 'Esa marca ya está registrada.']);
             exit;
         }
 
-        $stmt = $conexion->prepare("INSERT INTO marcas ($nombre_columna) VALUES (?)");
-        $stmt->bind_param("s", $marca);
-        if ($stmt->execute()) {
+        // Insertar
+        $stmt = $conexion->prepare("INSERT INTO marcas ($nombre_columna) VALUES (:marca)");
+        if ($stmt->execute([':marca' => $marca])) {
             echo json_encode(['status' => 'success', 'message' => 'Marca agregada correctamente.']);
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Error al agregar la marca.']);
         }
-        $stmt->close();
         break;
 
     case 'actualizar':
-        $id_marca = $_POST['id_marca'] ?? 0;
+        $id_marca = intval($_POST['id_marca'] ?? 0);
         $marca = trim($_POST['marca'] ?? '');
-        if (empty($marca) || $id_marca <= 0) { /* ... */ }
-        
-        // Validación de solo letras
-        if (!preg_match('/^[A-Za-zÑñÁáÉéÍíÓóÚú\s]+$/', $marca)) { /* ... */ }
 
-        // ¡CORRECCIÓN! Compara en minúsculas y excluye el ID actual
-        $stmt_check = $conexion->prepare("SELECT id_marca FROM marcas WHERE LOWER($nombre_columna) = LOWER(?) AND id_marca != ?");
-        $stmt_check->bind_param("si", $marca, $id_marca);
-        if ($stmt_check->execute() && $stmt_check->get_result()->num_rows > 0) {
-            echo json_encode(['status' => 'error', 'message' => 'Esa marca ya está en uso.']);
-            exit;
-        }
-        
-        $stmt = $conexion->prepare("UPDATE marcas SET $nombre_columna = ? WHERE id_marca = ?");
-        $stmt->bind_param("si", $marca, $id_marca);
-        $id_marca = $_POST['id_marca'] ?? 0;
-        $marca = trim($_POST['marca'] ?? '');
+        // Validaciones
         if (empty($marca) || $id_marca <= 0) {
             echo json_encode(['status' => 'error', 'message' => 'Datos inválidos.']);
             exit;
         }
+        if (!preg_match($regex_letras, $marca)) {
+            echo json_encode(['status' => 'error', 'message' => 'El nombre de la marca solo puede contener letras y espacios.']);
+            exit;
+        }
         
-        $stmt_check = $conexion->prepare("SELECT id_marca FROM marcas WHERE marcas = ? AND id_marca != ?");
-        $stmt_check->bind_param("si", $marca, $id_marca);
-        $stmt_check->execute();
-        if ($stmt_check->get_result()->num_rows > 0) {
+        // Verificar duplicados (excluyendo el registro actual, case-insensitive)
+        $stmt = $conexion->prepare("SELECT id_marca FROM marcas WHERE LOWER($nombre_columna) = LOWER(:marca) AND id_marca != :id_marca");
+        $stmt->execute([':marca' => $marca, ':id_marca' => $id_marca]);
+        if ($stmt->fetch()) {
             echo json_encode(['status' => 'error', 'message' => 'Esa marca ya está en uso por otro registro.']);
             exit;
         }
         
-        $stmt = $conexion->prepare("UPDATE marcas SET marcas = ? WHERE id_marca = ?");
-        $stmt->bind_param("si", $marca, $id_marca);
-        if ($stmt->execute()) {
+        // Actualizar
+        $stmt = $conexion->prepare("UPDATE marcas SET $nombre_columna = :marca WHERE id_marca = :id_marca");
+        if ($stmt->execute([':marca' => $marca, ':id_marca' => $id_marca])) {
             echo json_encode(['status' => 'success', 'message' => 'Marca actualizada correctamente.']);
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Error al actualizar la marca.']);
         }
-        $stmt->close();
         break;
 
     case 'eliminar':
-        $id_marca = $_POST['id'] ?? 0;
+        $id_marca = intval($_POST['id'] ?? 0);
         if ($id_marca <= 0) {
             echo json_encode(['status' => 'error', 'message' => 'ID inválido.']);
             exit;
         }
         
-        $stmt = $conexion->prepare("DELETE FROM marcas WHERE id_marca = ?");
-        $stmt->bind_param("i", $id_marca);
-        if ($stmt->execute()) {
-            echo json_encode(['status' => 'success', 'message' => 'Marca eliminada correctamente.']);
-        } else {
-            echo json_encode(['status' => 'error', 'message' => 'Error al eliminar.']);
+        // Opcional: Verificar dependencias en 'referencia_marca'
+        $stmt_check = $conexion->prepare("SELECT COUNT(*) FROM referencia_marca WHERE id_marcas = :id_marca");
+        $stmt_check->execute([':id_marca' => $id_marca]);
+        if ($stmt_check->fetchColumn() > 0) {
+            echo json_encode(['status' => 'error', 'message' => 'No se puede eliminar. Esta marca está en uso por una o más referencias.']);
+            exit;
         }
-        $stmt->close();
+
+        // Eliminar
+        $stmt = $conexion->prepare("DELETE FROM marcas WHERE id_marca = :id_marca");
+        if ($stmt->execute([':id_marca' => $id_marca])) {
+            if ($stmt->rowCount() > 0) {
+                echo json_encode(['status' => 'success', 'message' => 'Marca eliminada correctamente.']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'No se encontró la marca para eliminar.']);
+            }
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Error al intentar eliminar la marca.']);
+        }
         break;
 
     default:
         echo json_encode(['status' => 'error', 'message' => 'Acción no válida.']);
         break;
 }
-
-$conexion->close();
 ?>

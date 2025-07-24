@@ -8,6 +8,66 @@ include 'C:/xampp/htdocs/Taller_motos/includes/validarsession.php';
         <i class="fas fa-angle-up"></i>
     </a>
 
+     <!-- === ¡NUEVO! MODAL PARA PERFIL DE ADMINISTRADOR === -->
+    <div class="modal fade" id="modalPerfilAdmin" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Mi Perfil</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <form id="formPerfilAdmin" novalidate>
+                    <div class="modal-body">
+                        <!-- Campos no editables -->
+                        <div class="form-group">
+                            <label>Documento</label>
+                            <input type="text" class="form-control" value="<?php echo htmlspecialchars($documento_administrador); ?>" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" class="form-control" value="<?php echo htmlspecialchars($nombre_administrador); ?>" readonly>
+                        </div>
+                        <hr>
+                        <!-- Campos editables -->
+                        <div class="form-group">
+                            <label for="perfil_telefono">Teléfono</label>
+                            <input type="number" class="form-control" id="perfil_telefono" name="telefono" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="perfil_email">Email</label>
+                            <input type="email" class="form-control" id="perfil_email" name="email" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <hr>
+                        <h6>Cambiar Contraseña (opcional)</h6>
+                        <div class="form-group">
+                            <label for="perfil_password_actual">Contraseña Actual</label>
+                            <input type="password" class="form-control" id="perfil_password_actual" name="password_actual" placeholder="Ingresa tu contraseña actual para cambiarla" autocomplete="current-password">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="perfil_password_nueva">Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="perfil_password_nueva" name="password_nueva" autocomplete="new-password">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="perfil_confirmar_password">Confirmar Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="perfil_confirmar_password" name="confirmar_password" autocomplete="new-password">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de cierre de sesión -->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
@@ -28,30 +88,42 @@ include 'C:/xampp/htdocs/Taller_motos/includes/validarsession.php';
         </div>
     </div>
 
-    <!-- JavaScript principal de Bootstrap -->
+
+
+     <!-- 1. LIBRERÍAS PRINCIPALES (jQuery siempre primero) -->
     <script src="<?php echo VENDOR_URL; ?>/jquery/jquery.min.js"></script>
     <script src="<?php echo VENDOR_URL; ?>/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Plugin principal de JavaScript -->
+    <!-- 2. PLUGINS ESENCIALES -->
     <script src="<?php echo VENDOR_URL; ?>/jquery-easing/jquery.easing.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert2 -->
 
-    <!-- Scripts personalizados para todas las páginas -->
+    <!-- 3. SCRIPT PRINCIPAL DE LA PLANTILLA -->
     <script src="<?php echo JS_URL; ?>/sb-admin-2.min.js"></script>
 
-    <!-- Plugins de la página -->
-    <script src="<?php echo VENDOR_URL; ?>/chart.js/Chart.min.js"></script>
-    <script src="<?php echo JS_URL; ?>/demo/chart-area-demo.js"></script>
-    <script src="<?php echo JS_URL; ?>/demo/chart-pie-demo.js"></script>
-    <!-- Plugins de DataTables -->
-    <script src="<?php echo VENDOR_URL; ?>/datatables/jquery.dataTables.min.js"></script>
-    <script src="<?php echo VENDOR_URL; ?>/datatables/dataTables.bootstrap4.min.js"></script>
+    <!-- 4. PLUGINS DE PÁGINAS ESPECÍFICAS (DataTables, Chart.js) -->
+    <?php
+    $pagina_actual = basename($_SERVER['PHP_SELF']);
 
-    <!-- Scripts personalizados de la página -->
-    <script src="<?php echo JS_URL; ?>/demo/chart-area-demo.js"></script>
-    <script src="<?php echo JS_URL; ?>/demo/chart-pie-demo.js"></script>
+    // Cargar DataTables solo en páginas que lo necesiten
+    $paginas_con_tabla = ['administradores.php', 'clientes.php', 'motos.php', 'tipos_trabajos.php', 'cilindraje.php', 'marcas.php', 'referencias.php', 'modelos.php', 'colores.php', 'mantenimientos.php', 'referencias_marcas.php'];
+    if (in_array($pagina_actual, $paginas_con_tabla)) {
+        echo '<script src="' . VENDOR_URL . '/datatables/jquery.dataTables.min.js"></script>';
+        echo '<script src="' . VENDOR_URL . '/datatables/dataTables.bootstrap4.min.js"></script>';
+    }
 
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    // Cargar Gráficas solo en el dashboard
+    if ($pagina_actual == 'index.php') {
+        echo '<script src="' . VENDOR_URL . '/chart.js/Chart.min.js"></script>';
+        echo '<script src="' . VENDOR_URL . '/datatables/jquery.dataTables.min.js"></script>';
+        echo '<script src="' . VENDOR_URL . '/datatables/dataTables.bootstrap4.min.js"></script>';
+    }
+    ?>
+    
+    <!-- 5. ¡TUS SCRIPTS PERSONALIZADOS SIEMPRE AL FINAL! -->
+    <!-- Estos scripts dependen de jQuery, por lo que deben cargarse después -->
+    <script src="<?php echo JS_URL; ?>/perfil.js"></script> <!-- Este script ahora funcionará -->
+
 
     <script>
     document.getElementById('btnCerrarSesion').addEventListener('click', function() {

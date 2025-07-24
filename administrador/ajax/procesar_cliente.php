@@ -1,17 +1,23 @@
 <?php
+// ajax/procesar_cliente.php (VERSIÓN FINAL CON PDO Y AUDITORÍA)
+session_start();
 header('Content-Type: application/json');
-$conexion = new mysqli('localhost', 'root', '', 'taller_motos');
 
-if ($conexion->connect_error) {
-    echo json_encode(['status' => 'error', 'message' => 'Error de conexión: ' . $conexion->connect_error]);
-    exit;
-}
+// Usar una ruta relativa segura
+require_once __DIR__ . '/../../conecct/conex.php';
+
+$db = new Database();
+$conexion = $db->conectar(); // $conexion es ahora un objeto PDO
+
+// Establecer la variable de sesión de MySQL para los Triggers
+$id_admin_actual = $_SESSION['id_documento'] ?? 'sistema';
+$stmt_session_var = $conexion->prepare("SET @current_admin_id = ?");
+$stmt_session_var->execute([$id_admin_actual]);
 
 $accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
 
 switch ($accion) {
     case 'agregar':
-        // 1. Validar campos vacíos
         if (empty($_POST['documento']) || empty($_POST['nombre']) || empty($_POST['telefono']) || empty($_POST['fecha_ingreso'])) {
             echo json_encode(['status' => 'error', 'message' => 'Documento, nombre, teléfono y fecha de ingreso son obligatorios.']);
             exit;
@@ -24,60 +30,41 @@ switch ($accion) {
         $direccion = $_POST['direccion'] ?? '';
         $fecha_ingreso = $_POST['fecha_ingreso'];
         
-
-        $stmt_check_admin = $conexion->prepare("SELECT id_documento FROM administradores WHERE id_documento = ?");
-        $stmt_check_admin->bind_param("s", $documento);
-        $stmt_check_admin->execute();
-        $result_admin_check = $stmt_check_admin->get_result();
-        
-        if ($result_admin_check->num_rows > 0) {
-            echo json_encode(['status' => 'error', 'message' => 'El número de documento ya está registrado como un administrador.']);
-            $stmt_check_admin->close();
-            $conexion->close();
+        // Validar en tabla de administradores
+        $stmt = $conexion->prepare("SELECT id_documento FROM administradores WHERE id_documento = :documento");
+        $stmt->execute([':documento' => $documento]);
+        if ($stmt->fetch()) {
+            echo json_encode(['status' => 'error', 'message' => 'El documento ya está registrado como administrador.']);
             exit;
         }
-        $stmt_check_admin->close();
 
-
-        // --- VERIFICACIÓN DE DUPLICADOS EN LA TABLA DE CLIENTES (la que ya tenías) ---
-        $stmt_check_cliente = $conexion->prepare("SELECT id_documento_cli FROM clientes WHERE id_documento_cli = ? OR telefono = ?");
-        $stmt_check_cliente->bind_param("ss", $documento, $telefono);
-        $stmt_check_cliente->execute();
-        $result_cliente_check = $stmt_check_cliente->get_result();
-        
-        if ($result_cliente_check->num_rows > 0) {
-            $existing_user = $result_cliente_check->fetch_assoc();
+        // Validar duplicados en tabla de clientes
+        $stmt = $conexion->prepare("SELECT id_documento_cli, telefono FROM clientes WHERE id_documento_cli = :documento OR telefono = :telefono");
+        $stmt->execute([':documento' => $documento, ':telefono' => $telefono]);
+        $existing_user = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($existing_user) {
             $message = ($existing_user['id_documento_cli'] == $documento) 
-                ? 'El número de documento ya está registrado como cliente.' 
-                : 'El número de teléfono ya está registrado por otro cliente.';
-            
+                ? 'El documento ya está registrado como cliente.' 
+                : 'El teléfono ya está registrado por otro cliente.';
             echo json_encode(['status' => 'error', 'message' => $message]);
-            $stmt_check_cliente->close();
-            $conexion->close();
             exit;
         }
-        $stmt_check_cliente->close();
-        
-        // Si todas las validaciones pasan, se procede con la inserción
-        $stmt = $conexion->prepare("INSERT INTO clientes (id_documento_cli, nombre, telefono, email, direccion, fecha_ingreso, fecha_creacion) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-        $stmt->bind_param("ssssss", $documento, $nombre, $telefono, $email, $direccion, $fecha_ingreso);
-        
-        if ($stmt->execute()) {
+
+        // Insertar
+        $stmt = $conexion->prepare("INSERT INTO clientes (id_documento_cli, nombre, telefono, email, direccion, fecha_ingreso, fecha_creacion) VALUES (:doc, :nom, :tel, :email, :dir, :fecha_ing, NOW())");
+        if ($stmt->execute([':doc' => $documento, ':nom' => $nombre, ':tel' => $telefono, ':email' => $email, ':dir' => $direccion, ':fecha_ing' => $fecha_ingreso])) {
             echo json_encode(['status' => 'success', 'message' => 'Cliente agregado correctamente.']);
         } else {
-            echo json_encode(['status' => 'error', 'message' => 'Error al agregar cliente: ' . $stmt->error]);
+            echo json_encode(['status' => 'error', 'message' => 'Error al agregar el cliente.']);
         }
-        $stmt->close();
         break;
         
     case 'obtener':
         $id = $_GET['id'] ?? 0;
-        $stmt = $conexion->prepare("SELECT * FROM clientes WHERE id_documento_cli = ?");
-        $stmt->bind_param("s", $id);
-        $stmt->execute();
-        $cliente = $stmt->get_result()->fetch_assoc();
+        $stmt = $conexion->prepare("SELECT * FROM clientes WHERE id_documento_cli = :id");
+        $stmt->execute([':id' => $id]);
+        $cliente = $stmt->fetch(PDO::FETCH_ASSOC);
         echo json_encode($cliente);
-        $stmt->close();
         break;
 
     case 'actualizar':
@@ -87,37 +74,41 @@ switch ($accion) {
         $email = $_POST['email'] ?? '';
         $direccion = $_POST['direccion'] ?? '';
 
-        // Verificar duplicados (excluyendo al propio cliente)
-        $stmt_check = $conexion->prepare("SELECT id_documento_cli FROM clientes WHERE (telefono = ?) AND id_documento_cli != ?");
-        $stmt_check->bind_param("ss", $telefono, $id);
-        $stmt_check->execute();
-        if ($stmt_check->get_result()->num_rows > 0) {
+        if (empty($id) || empty($nombre) || empty($telefono)) {
+            echo json_encode(['status' => 'error', 'message' => 'Documento, nombre y teléfono son obligatorios.']);
+            exit;
+        }
+
+        // Validar duplicados de teléfono (excluyendo al propio cliente)
+        $stmt = $conexion->prepare("SELECT id_documento_cli FROM clientes WHERE telefono = :telefono AND id_documento_cli != :id");
+        $stmt->execute([':telefono' => $telefono, ':id' => $id]);
+        if ($stmt->fetch()) {
             echo json_encode(['status' => 'error', 'message' => 'El teléfono ya está en uso por otro cliente.']);
             exit;
         }
         
-        $stmt = $conexion->prepare("UPDATE clientes SET nombre = ?, telefono = ?, email = ?, direccion = ? WHERE id_documento_cli = ?");
-        $stmt->bind_param("sssss", $nombre, $telefono, $email, $direccion, $id);
-        if ($stmt->execute()) {
+        // Actualizar
+        $stmt = $conexion->prepare("UPDATE clientes SET nombre = :nombre, telefono = :telefono, email = :email, direccion = :direccion WHERE id_documento_cli = :id");
+        if ($stmt->execute([':nombre' => $nombre, ':telefono' => $telefono, ':email' => $email, ':direccion' => $direccion, ':id' => $id])) {
             echo json_encode(['status' => 'success', 'message' => 'Cliente actualizado correctamente.']);
         } else {
-            echo json_encode(['status' => 'error', 'message' => 'Error al actualizar: ' . $stmt->error]);
+            echo json_encode(['status' => 'error', 'message' => 'Error al actualizar el cliente.']);
         }
-        $stmt->close();
         break;
 
     case 'eliminar':
         $id = $_POST['id'] ?? 0;
-        $stmt = $conexion->prepare("DELETE FROM clientes WHERE id_documento_cli = ?");
-        $stmt->bind_param("s", $id);
-        if ($stmt->execute()) {
-            echo json_encode(['status' => 'success', 'message' => 'Cliente y sus datos asociados eliminados.']);
-        } else {
-            echo json_encode(['status' => 'error', 'message' => 'Error al eliminar: ' . $stmt->error]);
+        if (empty($id)) {
+            echo json_encode(['status' => 'error', 'message' => 'ID no proporcionado.']);
+            exit;
         }
-        $stmt->close();
+
+        $stmt = $conexion->prepare("DELETE FROM clientes WHERE id_documento_cli = :id");
+        if ($stmt->execute([':id' => $id])) {
+            echo json_encode(['status' => 'success', 'message' => 'Cliente eliminado correctamente.']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Error al eliminar el cliente.']);
+        }
         break;
 }
-
-$conexion->close();
 ?>

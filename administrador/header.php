@@ -225,25 +225,24 @@ $documento_administrador = isset($_SESSION['id_documento']) ? $_SESSION['id_docu
 
                         <div class="topbar-divider d-none d-sm-block"></div>
 
-                        <!-- Elemento de navegación - Información del administrador -->
+                        <!-- Elemento de navegación - Información del administrador (EN LA BARRA SUPERIOR) -->
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $nombre_administrador; ?></span>
-                                    <span class="mr-3 d-none d-lg-inline text-gray-600 small"> - <?php echo $documento_administrador; ?></span>
-                                <span></span>
-                                <img class="img-profile rounded-circle"
-                                    src="<?php echo CSS_URL; ?>/img/undraw_profile.svg">
+                                <span class="mr-3 d-none d-lg-inline text-gray-600 small"> - <?php echo $documento_administrador; ?></span>
+                                <img class="img-profile rounded-circle" src="<?php echo CSS_URL; ?>/img/undraw_profile.svg">
                             </a>
                             <!-- Menú desplegable - Información del usuario -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                                <!-- ¡CAMBIO AQUÍ! Este enlace ahora abre el modal de perfil -->
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modalPerfilAdmin">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Perfil
                                 </a>
                             </div>
                         </li>
+                        <!-- ... -->
+   
 
                     </ul>
 

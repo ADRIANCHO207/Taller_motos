@@ -1,61 +1,72 @@
 <?php
+// ajax/procesar_modelo.php (VERSIÓN FINAL CON PDO Y AUDITORÍA)
+session_start();
 header('Content-Type: application/json');
-$conexion = new mysqli('localhost', 'root', '', 'taller_motos');
+require_once __DIR__ . '/../../conecct/conex.php';
 
-if ($conexion->connect_error) {
-    echo json_encode(['status' => 'error', 'message' => 'Error de conexión.']);
-    exit;
-}
+$db = new Database();
+$conexion = $db->conectar(); // $conexion es un objeto PDO
 
-$accion = $_POST['accion'] ?? '';
+// Establecer la variable de sesión de MySQL para los Triggers
+$id_admin_actual = $_SESSION['id_documento'] ?? 'sistema';
+$stmt_session_var = $conexion->prepare("SET @current_admin_id = ?");
+$stmt_session_var->execute([$id_admin_actual]);
+
+$accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
 $current_year = date('Y');
 
 switch ($accion) {
     case 'agregar':
         $anio = intval($_POST['anio'] ?? 0);
+
+        // Validaciones
         if ($anio < 1980 || $anio > ($current_year + 2)) {
             echo json_encode(['status' => 'error', 'message' => "El año debe ser un número válido entre 1980 y " . ($current_year + 2) . "."]);
             exit;
         }
 
-        $stmt_check = $conexion->prepare("SELECT id_modelo FROM modelos WHERE anio = ?");
-        $stmt_check->bind_param("i", $anio);
-        $stmt_check->execute();
-        if ($stmt_check->get_result()->num_rows > 0) {
+        // Verificar duplicados
+        $stmt = $conexion->prepare("SELECT id_modelo FROM modelos WHERE anio = :anio");
+        $stmt->execute([':anio' => $anio]);
+        if ($stmt->fetch()) {
             echo json_encode(['status' => 'error', 'message' => 'Ese año ya está registrado.']);
             exit;
         }
 
-        $stmt = $conexion->prepare("INSERT INTO modelos (anio) VALUES (?)");
-        $stmt->bind_param("i", $anio);
-        if ($stmt->execute()) {
+        // Insertar
+        $stmt = $conexion->prepare("INSERT INTO modelos (anio) VALUES (:anio)");
+        if ($stmt->execute([':anio' => $anio])) {
             echo json_encode(['status' => 'success', 'message' => 'Modelo (año) agregado correctamente.']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Error al agregar el modelo (año).']);
         }
-        $stmt->close();
         break;
 
     case 'actualizar':
         $id_modelo = intval($_POST['id_modelo'] ?? 0);
         $anio = intval($_POST['anio'] ?? 0);
-        if ($anio < 1980 || $anio > ($current_year + 2) || $id_modelo <= 0) {
-            echo json_encode(['status' => 'error', 'message' => 'Datos inválidos.']);
+
+        // Validaciones
+        if ($id_modelo <= 0 || $anio < 1980 || $anio > ($current_year + 2)) {
+            echo json_encode(['status' => 'error', 'message' => 'Datos inválidos o fuera de rango.']);
             exit;
         }
         
-        $stmt_check = $conexion->prepare("SELECT id_modelo FROM modelos WHERE anio = ? AND id_modelo != ?");
-        $stmt_check->bind_param("ii", $anio, $id_modelo);
-        $stmt_check->execute();
-        if ($stmt_check->get_result()->num_rows > 0) {
+        // Verificar duplicados (excluyendo el registro actual)
+        $stmt = $conexion->prepare("SELECT id_modelo FROM modelos WHERE anio = :anio AND id_modelo != :id_modelo");
+        $stmt->execute([':anio' => $anio, ':id_modelo' => $id_modelo]);
+        if ($stmt->fetch()) {
             echo json_encode(['status' => 'error', 'message' => 'Ese año ya está en uso por otro registro.']);
             exit;
         }
         
-        $stmt = $conexion->prepare("UPDATE modelos SET anio = ? WHERE id_modelo = ?");
-        $stmt->bind_param("ii", $anio, $id_modelo);
-        if ($stmt->execute()) {
+        // Actualizar
+        $stmt = $conexion->prepare("UPDATE modelos SET anio = :anio WHERE id_modelo = :id_modelo");
+        if ($stmt->execute([':anio' => $anio, ':id_modelo' => $id_modelo])) {
             echo json_encode(['status' => 'success', 'message' => 'Modelo (año) actualizado correctamente.']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Error al actualizar el modelo (año).']);
         }
-        $stmt->close();
         break;
 
     case 'eliminar':
@@ -65,18 +76,29 @@ switch ($accion) {
             exit;
         }
         
-        $stmt = $conexion->prepare("DELETE FROM modelos WHERE id_modelo = ?");
-        $stmt->bind_param("i", $id_modelo);
-        if ($stmt->execute()) {
-            echo json_encode(['status' => 'success', 'message' => 'Modelo (año) eliminado correctamente.']);
+        // Opcional: Verificar dependencias en la tabla 'motos'
+        $stmt_check = $conexion->prepare("SELECT COUNT(*) FROM motos WHERE id_modelo = :id_modelo");
+        $stmt_check->execute([':id_modelo' => $id_modelo]);
+        if ($stmt_check->fetchColumn() > 0) {
+            echo json_encode(['status' => 'error', 'message' => 'No se puede eliminar. Este modelo (año) está en uso por una o más motos.']);
+            exit;
         }
-        $stmt->close();
+
+        // Eliminar
+        $stmt = $conexion->prepare("DELETE FROM modelos WHERE id_modelo = :id_modelo");
+        if ($stmt->execute([':id_modelo' => $id_modelo])) {
+            if ($stmt->rowCount() > 0) {
+                echo json_encode(['status' => 'success', 'message' => 'Modelo (año) eliminado correctamente.']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'No se encontró el modelo para eliminar.']);
+            }
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Error al intentar eliminar el modelo (año).']);
+        }
         break;
 
     default:
         echo json_encode(['status' => 'error', 'message' => 'Acción no válida.']);
         break;
 }
-
-$conexion->close();
 ?>

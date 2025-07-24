@@ -1,115 +1,122 @@
 <?php
+// ajax/procesar_referencia.php (VERSIÓN FINAL CON PDO Y AUDITORÍA)
+session_start();
 header('Content-Type: application/json');
-$conexion = new mysqli('localhost', 'root', '', 'taller_motos');
+require_once __DIR__ . '/../../conecct/conex.php';
 
-if ($conexion->connect_error) {
-    echo json_encode(['status' => 'error', 'message' => 'Error de conexión.']);
-    exit;
-}
+$db = new Database();
+$conexion = $db->conectar(); // $conexion es un objeto PDO
+
+// Establecer la variable de sesión de MySQL para los Triggers
+$id_admin_actual = $_SESSION['id_documento'] ?? 'sistema';
+$stmt_session_var = $conexion->prepare("SET @current_admin_id = ?");
+$stmt_session_var->execute([$id_admin_actual]);
 
 $accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
-
-// --- ¡CORRECCIÓN CLAVE! Definimos la expresión regular aquí, una sola vez. ---
 $regex_referencia = '/^[A-Za-z][A-Za-z0-9\s-]{1,19}$/';
 
 switch ($accion) {
     case 'agregar':
-        // Recogemos los datos una sola vez
-        $id_marcas = $_POST['id_marcas'] ?? 0;
+        $id_marcas = intval($_POST['id_marcas'] ?? 0);
         $referencia_marca = trim($_POST['referencia_marca'] ?? '');
         
-        // 1. Validar campos vacíos
+        // Validaciones
         if (empty($referencia_marca) || $id_marcas <= 0) {
             echo json_encode(['status' => 'error', 'message' => 'Ambos campos son obligatorios.']);
             exit;
         }
-
-        // 2. Validar el formato de la referencia
         if (!preg_match($regex_referencia, $referencia_marca)) {
             echo json_encode(['status' => 'error', 'message' => 'El formato de la referencia no es válido.']);
             exit;
         }
         
-        // 3. Validar si ya existe la combinación marca-referencia
-        $stmt_check = $conexion->prepare("SELECT id_referencia FROM referencia_marca WHERE LOWER(referencia_marca) = LOWER(?) AND id_marcas = ?");
-        $stmt_check->bind_param("si", $referencia_marca, $id_marcas);
-        $stmt_check->execute();
-        if ($stmt_check->get_result()->num_rows > 0) {
+        // Verificar duplicados (case-insensitive)
+        $stmt = $conexion->prepare("SELECT id_referencia FROM referencia_marca WHERE LOWER(referencia_marca) = LOWER(:ref) AND id_marcas = :id_marca");
+        $stmt->execute([':ref' => $referencia_marca, ':id_marca' => $id_marcas]);
+        if ($stmt->fetch()) {
             echo json_encode(['status' => 'error', 'message' => 'Esa referencia ya existe para la marca seleccionada.']);
             exit;
         }
-        $stmt_check->close();
 
-        // 4. Insertar los datos
-        $stmt = $conexion->prepare("INSERT INTO referencia_marca (referencia_marca, id_marcas) VALUES (?, ?)");
-        $stmt->bind_param("si", $referencia_marca, $id_marcas);
-        if ($stmt->execute()) {
+        // Insertar
+        $stmt = $conexion->prepare("INSERT INTO referencia_marca (referencia_marca, id_marcas) VALUES (:ref, :id_marca)");
+        if ($stmt->execute([':ref' => $referencia_marca, ':id_marca' => $id_marcas])) {
             echo json_encode(['status' => 'success', 'message' => 'Referencia agregada correctamente.']);
         } else {
              echo json_encode(['status' => 'error', 'message' => 'Error al agregar la referencia.']);
         }
-        $stmt->close();
         break;
 
     case 'obtener':
-        $id = $_GET['id'] ?? 0;
-        $stmt = $conexion->prepare("SELECT id_referencia, referencia_marca, id_marcas FROM referencia_marca WHERE id_referencia = ?");
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $referencia = $stmt->get_result()->fetch_assoc();
+        $id = intval($_GET['id'] ?? 0);
+        $stmt = $conexion->prepare("SELECT id_referencia, referencia_marca, id_marcas FROM referencia_marca WHERE id_referencia = :id");
+        $stmt->execute([':id' => $id]);
+        $referencia = $stmt->fetch(PDO::FETCH_ASSOC);
         echo json_encode($referencia);
-        $stmt->close();
         break;
 
     case 'actualizar':
-        // Recogemos los datos una sola vez
-        $id_referencia = $_POST['id_referencia'] ?? 0;
-        $id_marcas = $_POST['id_marcas'] ?? 0;
+        $id_referencia = intval($_POST['id_referencia'] ?? 0);
+        $id_marcas = intval($_POST['id_marcas'] ?? 0);
         $referencia_marca = trim($_POST['referencia_marca'] ?? '');
         
-        // 1. Validar datos básicos
+        // Validaciones
         if (empty($referencia_marca) || $id_marcas <= 0 || $id_referencia <= 0) {
              echo json_encode(['status' => 'error', 'message' => 'Datos inválidos.']);
             exit;
         }
-
-        // 2. Validar el formato de la referencia
         if (!preg_match($regex_referencia, $referencia_marca)) {
             echo json_encode(['status' => 'error', 'message' => 'El formato de la referencia no es válido.']);
             exit;
         }
         
-        // 3. Validar si ya existe la combinación (excluyendo el registro actual)
-        $stmt_check = $conexion->prepare("SELECT id_referencia FROM referencia_marca WHERE LOWER(referencia_marca) = LOWER(?) AND id_marcas = ? AND id_referencia != ?");
-        $stmt_check->bind_param("sii", $referencia_marca, $id_marcas, $id_referencia);
-        $stmt_check->execute();
-        if ($stmt_check->get_result()->num_rows > 0) {
+        // Verificar duplicados (excluyendo el registro actual, case-insensitive)
+        $stmt = $conexion->prepare("SELECT id_referencia FROM referencia_marca WHERE LOWER(referencia_marca) = LOWER(:ref) AND id_marcas = :id_marca AND id_referencia != :id_ref");
+        $stmt->execute([':ref' => $referencia_marca, ':id_marca' => $id_marcas, ':id_ref' => $id_referencia]);
+        if ($stmt->fetch()) {
             echo json_encode(['status' => 'error', 'message' => 'Esa referencia ya existe para la marca seleccionada.']);
             exit;
         }
-        $stmt_check->close();
         
-        // 4. Actualizar los datos
-        $stmt = $conexion->prepare("UPDATE referencia_marca SET referencia_marca = ?, id_marcas = ? WHERE id_referencia = ?");
-        $stmt->bind_param("sii", $referencia_marca, $id_marcas, $id_referencia);
-        if ($stmt->execute()) {
+        // Actualizar
+        $stmt = $conexion->prepare("UPDATE referencia_marca SET referencia_marca = :ref, id_marcas = :id_marca WHERE id_referencia = :id_ref");
+        if ($stmt->execute([':ref' => $referencia_marca, ':id_marca' => $id_marcas, ':id_ref' => $id_referencia])) {
             echo json_encode(['status' => 'success', 'message' => 'Referencia actualizada correctamente.']);
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Error al actualizar la referencia.']);
         }
-        $stmt->close();
         break;
 
     case 'eliminar':
-        $id = $_POST['id'] ?? 0;
-        $stmt = $conexion->prepare("DELETE FROM referencia_marca WHERE id_referencia = ?");
-        $stmt->bind_param("i", $id);
-        if ($stmt->execute()) {
-            echo json_encode(['status' => 'success', 'message' => 'Referencia eliminada correctamente.']);
+        $id_referencia = intval($_POST['id'] ?? 0);
+        if ($id_referencia <= 0) {
+            echo json_encode(['status' => 'error', 'message' => 'ID inválido.']);
+            exit;
         }
-        $stmt->close();
+        
+        // Opcional: Verificar dependencias en la tabla 'motos'
+        $stmt_check = $conexion->prepare("SELECT COUNT(*) FROM motos WHERE id_referencia_marca = :id_ref");
+        $stmt_check->execute([':id_ref' => $id_referencia]);
+        if ($stmt_check->fetchColumn() > 0) {
+            echo json_encode(['status' => 'error', 'message' => 'No se puede eliminar. Esta referencia está en uso por una o más motos.']);
+            exit;
+        }
+
+        // Eliminar
+        $stmt = $conexion->prepare("DELETE FROM referencia_marca WHERE id_referencia = :id_ref");
+        if ($stmt->execute([':id_ref' => $id_referencia])) {
+            if ($stmt->rowCount() > 0) {
+                echo json_encode(['status' => 'success', 'message' => 'Referencia eliminada correctamente.']);
+            } else {
+                 echo json_encode(['status' => 'error', 'message' => 'No se encontró la referencia para eliminar.']);
+            }
+        } else {
+             echo json_encode(['status' => 'error', 'message' => 'Error al intentar eliminar la referencia.']);
+        }
+        break;
+    
+    default:
+        echo json_encode(['status' => 'error', 'message' => 'Acción no válida.']);
         break;
 }
-
-$conexion->close();
 ?>
