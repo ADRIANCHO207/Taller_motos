@@ -106,7 +106,7 @@ include 'C:/xampp/htdocs/Taller_motos/includes/validarsession.php';
     $pagina_actual = basename($_SERVER['PHP_SELF']);
 
     // Cargar DataTables solo en páginas que lo necesiten
-    $paginas_con_tabla = ['administradores.php', 'clientes.php', 'motos.php', 'tipos_trabajos.php', 'cilindraje.php', 'marcas.php', 'referencias.php', 'modelos.php', 'colores.php', 'mantenimientos.php', 'referencias_marcas.php'];
+    $paginas_con_tabla = ['administradores.php', 'clientes.php', 'motos.php', 'tipos_trabajos.php', 'cilindraje.php', 'marcas.php', 'modelos.php', 'colores.php', 'mantenimientos.php', 'referencias_marcas.php', 'reportes.php'];
     if (in_array($pagina_actual, $paginas_con_tabla)) {
         echo '<script src="' . VENDOR_URL . '/datatables/jquery.dataTables.min.js"></script>';
         echo '<script src="' . VENDOR_URL . '/datatables/dataTables.bootstrap4.min.js"></script>';

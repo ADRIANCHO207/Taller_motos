@@ -27,7 +27,7 @@ $stmt_pie = $conexion->query("SELECT c.nombre, COUNT(m.id_placa) as total_motos 
 $datos['grafica_pie'] = $stmt_pie->fetchAll(PDO::FETCH_ASSOC);
 
 // --- ¡CAMBIO IMPORTANTE! Enviamos TODOS los registros de auditoría ---
-$stmt_audit = $conexion->query("SELECT tabla_afectada, accion_realizada, descripcion, fecha_hora FROM auditoria WHERE DATE(fecha_hora) = CURDATE() ORDER BY fecha_hora DESC");
+$stmt_audit = $conexion->query("SELECT tabla_afectada, accion_realizada, descripcion, fecha_hora, id_admin, nombre FROM auditoria, administradores WHERE DATE(fecha_hora) = CURDATE() AND auditoria.id_admin = administradores.id_documento ORDER BY fecha_hora DESC;");
 $datos['auditoria'] = $stmt_audit->fetchAll(PDO::FETCH_ASSOC);
 // --- FIN DEL CAMBIO ---
 

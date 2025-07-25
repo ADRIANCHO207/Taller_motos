@@ -46,7 +46,7 @@ $documento_administrador = isset($_SESSION['id_documento']) ? $_SESSION['id_docu
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="shortcut icon" href="<?php echo IMG_URL; ?>/logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="<?php echo IMG_URL; ?>/logo.jpg" type="image/x-icon">
 
     <title>Administrador - Taller de Motos</title>
 
@@ -72,7 +72,7 @@ $documento_administrador = isset($_SESSION['id_documento']) ? $_SESSION['id_docu
 
             <!-- Marca de la barra lateral -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?php echo ADMIN_URL; ?>/index.php">
-                <img src="<?php echo IMG_URL; ?>/logo.png" class="img" alt="Logo del Taller de Motos">
+                <img src="<?php echo IMG_URL; ?>/logo.jpg" class="img" alt="Logo del Taller de Motos">
             </a>
 
             <br>

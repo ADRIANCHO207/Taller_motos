@@ -1,87 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
-
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>SB Admin 2 - Forgot Password</title>
-
-    <!-- Custom fonts for this template-->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
-
-    <!-- Custom styles for this template-->
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña - Administrador</title>
+    <!-- Font Awesome para los iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Reutiliza los estilos del login -->
+    <link rel="stylesheet" href="css/login_styles.css"> 
+    <link rel="shortcut icon" href="img/logo.jpg" type="image/x-icon">
 </head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-logo-panel"><img src="img/logo.jpg" alt="Logo"></div>
+            <div class="login-form-panel">
+                <form id="formRecuperar" novalidate>
+                    <h2>Recuperar Contraseña</h2>
+                    <p class="text-muted mb-4">Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</p>
 
-<body class="bg-gradient-primary">
+                    <br>
 
-    <div class="container">
-
-        <!-- Outer Row -->
-        <div class="row justify-content-center">
-
-            <div class="col-xl-10 col-lg-12 col-md-9">
-
-                <div class="card o-hidden border-0 shadow-lg my-5">
-                    <div class="card-body p-0">
-                        <!-- Nested Row within Card Body -->
-                        <div class="row">
-                            <div class="col-lg-6 d-none d-lg-block bg-password-image"></div>
-                            <div class="col-lg-6">
-                                <div class="p-5">
-                                    <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-2">Forgot Your Password?</h1>
-                                        <p class="mb-4">We get it, stuff happens. Just enter your email address below
-                                            and we'll send you a link to reset your password!</p>
-                                    </div>
-                                    <form class="user">
-                                        <div class="form-group">
-                                            <input type="email" class="form-control form-control-user"
-                                                id="exampleInputEmail" aria-describedby="emailHelp"
-                                                placeholder="Enter Email Address...">
-                                        </div>
-                                        <a href="login.html" class="btn btn-primary btn-user btn-block">
-                                            Reset Password
-                                        </a>
-                                    </form>
-                                    <hr>
-                                    <div class="text-center">
-                                        <a class="small" href="register.html">Create an Account!</a>
-                                    </div>
-                                    <div class="text-center">
-                                        <a class="small" href="login.html">Already have an account? Login!</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="input-group">
+                        <input type="email" id="email" name="email" placeholder="Correo Electrónico" required>
+                        <i class="fas validation-icon"></i>
+                        <small class="error-message"></small>
                     </div>
-                </div>
+                    
+                    <button type="submit" id="btnEnviar">Enviar Enlace</button>
 
+                    <div id="form-message" style="margin-bottom: 15px;"></div>
+
+                    <div class="extra-links">
+                        <a href="login.php">Volver al Login</a>
+                    </div>
+                </form>
             </div>
-
         </div>
-
     </div>
 
-    <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-
-    <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
-
+    <!-- === ¡CORRECCIÓN CLAVE! AÑADIMOS JQUERY ANTES DE TU SCRIPT === -->
+    <!-- 1. Cargar jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- 2. Cargar SweetAlert2 (lo necesitarás para las alertas) -->
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- 3. AHORA SÍ, cargar tu script personalizado -->
+    <script src="js/recuperar_script.js"></script>
 </body>
-
 </html>

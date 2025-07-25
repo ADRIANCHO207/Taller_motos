@@ -95,6 +95,7 @@
                                     <th>Módulo</th>
                                     <th>Acción</th>
                                     <th>Descripción</th>
+                                    <th>Realizado por:</th>
                                 </tr>
                             </thead>
                             <tbody>

@@ -91,7 +91,7 @@ $(document).ready(function() {
                     tablaAuditoriaBody.empty();
                     data.auditoria.forEach(item => {
                         const fecha = new Date(item.fecha_hora).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' });
-                        tablaAuditoriaBody.append(`<tr><td>${fecha}</td><td>${item.tabla_afectada}</td><td>${item.accion_realizada}</td><td>${item.descripcion}</td></tr>`);
+                        tablaAuditoriaBody.append(`<tr><td>${fecha}</td><td>${item.tabla_afectada}</td><td>${item.accion_realizada}</td><td>${item.descripcion}</td><td>${item.id_admin} - ${item.nombre}</td></tr>`);
                     });
 
                     if ($.fn.DataTable.isDataTable('#tablaAuditoria')) {

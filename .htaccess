@@ -1,1 +1,37 @@
-ErrorDocument 404 /taller_motos/administrador/404.php
+# ==========================================================
+# Archivo .htaccess para Taller de Motos
+# ==========================================================
+
+# --- PREVENIR LISTADO DE DIRECTORIOS ---
+# Impide que los usuarios vean una lista de archivos si entran a una carpeta.
+Options -Indexes
+
+# --- PÁGINA DE ERROR 404 PERSONALIZADA ---
+# Mantenemos la tuya, pero asegúrate de que el 404.php esté en la raíz de 'administrador'.
+ErrorDocument 404 /Taller_motos/administrador/404.php
+
+# --- REGLAS DE REESCRITURA (SEGURIDAD Y URLS AMIGABLES) ---
+RewriteEngine On
+
+# Establecer la base del proyecto para que las reglas funcionen correctamente.
+RewriteBase /Taller_motos/
+
+# --- BLOQUEAR ACCESO DIRECTO A CARPETAS SENSIBLES ---
+# Denegar el acceso a la carpeta de conexión y a la de dependencias.
+RewriteRule ^(conecct|vendor)/.*$ - [F,L]
+
+# --- PROTEGER ARCHIVOS DE CONFIGURACIÓN Y SISTEMA ---
+# Denegar el acceso directo a archivos que no deberían ser visibles.
+<FilesMatch "^\.(htaccess|htpasswd)$|composer\.(json|lock)|package(-lock)?\.json$">
+    Order allow,deny
+    Deny from all
+    Satisfy All
+</FilesMatch>
+
+# --- PATRÓN FRONT CONTROLLER (OPCIONAL PERO RECOMENDADO) ---
+# Redirige todas las peticiones que NO son a archivos o directorios existentes
+# a un único punto de entrada (login.php). Esto centraliza tu aplicación.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+# Si estás fuera del login, redirige todo a login.php
+RewriteRule . login.php [L]

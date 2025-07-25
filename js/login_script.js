@@ -77,9 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 formMessage.className = data.status;
 
                 if (data.status === 'success') {
+                    loginForm.reset();
                     setTimeout(() => {
                         window.location.href = 'administrador/index.php'; 
-                    }, 1500); 
+                    }, 1500);
+                     
                 }
             })
             .catch(error => {

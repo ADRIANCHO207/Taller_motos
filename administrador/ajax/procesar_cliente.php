@@ -103,10 +103,12 @@ switch ($accion) {
             exit;
         }
 
+        // ¡Este código ahora funcionará gracias a ON DELETE CASCADE!
         $stmt = $conexion->prepare("DELETE FROM clientes WHERE id_documento_cli = :id");
         if ($stmt->execute([':id' => $id])) {
-            echo json_encode(['status' => 'success', 'message' => 'Cliente eliminado correctamente.']);
+            echo json_encode(['status' => 'success', 'message' => 'Cliente y todos sus datos asociados (motos, mantenimientos) han sido eliminados.']);
         } else {
+            // Este error ya no debería ocurrir por violación de integridad
             echo json_encode(['status' => 'error', 'message' => 'Error al eliminar el cliente.']);
         }
         break;

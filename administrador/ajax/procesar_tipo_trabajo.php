@@ -85,7 +85,7 @@ switch ($accion) {
         }
         
         // Validación de eliminación
-        $stmt_check = $conexion->prepare("SELECT COUNT(*) as total FROM detalle_mantenimiento WHERE id_tipo_trabajo = :id");
+        $stmt_check = $conexion->prepare("SELECT COUNT(*) as total FROM detalle_mantenimientos WHERE id_tipo_trabajo = :id");
         $stmt_check->execute([':id' => $id_tipo]);
         $resultado = $stmt_check->fetch(PDO::FETCH_ASSOC);
 
