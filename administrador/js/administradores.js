@@ -1,12 +1,6 @@
-// --- js/administradores.js (VERSIÓN COMPLETA Y FINAL) ---
-
 $(document).ready(function() {
     
-    // ==========================================================
-    // SECCIÓN 1: CONFIGURACIÓN Y FUNCIONES REUTILIZABLES
-    // ==========================================================
     
-    // --- Referencias a los elementos del DOM ---
     // Modal de AGREGAR
     const modalAgregar = $('#modalAgregarAdmin');
     const formAgregar = $('#formAgregarAdmin');
@@ -62,9 +56,6 @@ $(document).ready(function() {
         }
     };
 
-    // ==========================================================
-    // SECCIÓN 2: LÓGICA PARA AGREGAR NUEVO ADMINISTRADOR
-    // ==========================================================
     
     const validarConfirmacionPasswordAgregar = () => {
         const pass1 = passwordInput.val();
@@ -101,7 +92,7 @@ $(document).ready(function() {
             validarCampo(telefonoInput, reglas.telefono),
             validarCampo(passwordInput, reglas.password),
             validarConfirmacionPasswordAgregar()
-        ].every(Boolean); // Devuelve true solo si todos los elementos del array son true
+        ].every(Boolean);
 
         if (esValido) {
             const formData = $(this).serialize() + '&accion=agregar';
@@ -125,11 +116,7 @@ $(document).ready(function() {
         }
     });
 
-    // ==========================================================
-    // SECCIÓN 3: LÓGICA PARA EDITAR ADMINISTRADOR
-    // ==========================================================
-
-    // --- FUNCIÓN DE VALIDACIÓN DE CONTRASEÑAS DE EDICIÓN (CORREGIDA Y MEJORADA) ---
+    // --- FUNCIÓN DE VALIDACIÓN DE CONTRASEÑAS DE EDICIÓN  ---
     const validarPasswordsEditar = () => {
         const pass1Input = $('#edit_password');
         const pass2Input = $('#edit_confirmarPassword');
@@ -143,10 +130,7 @@ $(document).ready(function() {
             return true;
         }
 
-        // A partir de aquí, al menos un campo tiene texto.
-
-        // CASO 2: Validar el campo "Nueva Contraseña" contra la regla de complejidad.
-        // Se valida como si fuera obligatorio porque si se empieza a escribir, debe ser válido.
+        // CASO 2: Validar el campo "Contraseña" contra las reglas.
         const esPass1Valido = validarCampo(pass1Input, reglas.password, true);
 
         // CASO 3: Validar el campo "Confirmar Contraseña" contra el primero.
@@ -224,9 +208,7 @@ $(document).ready(function() {
         }
     });
 
-    // ==========================================================
-    // SECCIÓN 4: LÓGICA PARA ELIMINAR ADMINISTRADOR
-    // ==========================================================
+
     
     let adminIdParaEliminar;
 
@@ -252,9 +234,6 @@ $(document).ready(function() {
         });
     });
 
-    // ==========================================================
-    // SECCIÓN 5: LÓGICA GENERAL DE LOS MODALES
-    // ==========================================================
     // Función reutilizable para limpiar un formulario específico
     const limpiarFormulario = (formElement) => {
         if (formElement && formElement.length > 0) {
@@ -278,8 +257,7 @@ $(document).ready(function() {
     });
 
     modalAgregar.on('show.bs.modal', function (e) {
-        // Opcional: Descomenta estas líneas si quieres que el formulario
-        // siempre se limpie al abrir el modal, sin importar cómo se cerró.
+
         // form[0].reset();
         // form.find('.is-valid, .is-invalid').removeClass('is-valid is-invalid');
     });

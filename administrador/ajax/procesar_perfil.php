@@ -1,5 +1,5 @@
 <?php
-// --- ajax/procesar_perfil.php (VERSIÓN CORREGIDA CON PDO) ---
+
 session_start();
 header('Content-Type: application/json');
 
@@ -11,7 +11,7 @@ if (empty($_SESSION['id_documento'])) {
 
 require_once('C:/xampp/htdocs/Taller_motos/conecct/conex.php');
 $db = new Database();
-$conexion = $db->conectar(); // $conexion es ahora un objeto PDO
+$conexion = $db->conectar();
 
 $accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
 $id_admin_actual = $_SESSION['id_documento'];

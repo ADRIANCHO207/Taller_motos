@@ -1,9 +1,9 @@
 <?php
 // Inicia la sesión para poder acceder a las variables de sesión existentes
 session_start();
-// Elimina la variable de sesión 'id_documento' que almacena la identificación del usuario
+// Elimina la variable de sesión 'id_documento' que almacena la identificación del administrador
 unset($_SESSION['id_documento']);
-// Elimina la variable de sesión 'nombre' que almacena el nombre del usuario
+// Elimina la variable de sesión 'nombre' que almacena el nombre del administrador
 unset($_SESSION['nombre']);
 // Destruye completamente la sesión actual, eliminando todos los datos
 session_destroy();

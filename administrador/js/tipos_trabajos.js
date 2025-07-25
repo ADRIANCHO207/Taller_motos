@@ -1,11 +1,10 @@
-// --- js/tipos_trabajos.js (VERSIÓN COMPLETA Y FINAL) ---
 $(document).ready(function() {
     const modal = $('#modalTipoTrabajo');
     const form = $('#formTipoTrabajo');
     const modalLabel = $('#modalTipoTrabajoLabel');
     const formFiltros = $('#formFiltros');
 
-    // --- Función de validación mejorada ---
+    // --- Función de validación ---
     const validarFormulario = () => {
         let esValido = true;
         form.find('.is-invalid').removeClass('is-invalid');
@@ -90,7 +89,7 @@ $(document).ready(function() {
         }
     });
 
-    // --- Lógica para ELIMINAR ---
+    // --- ELIMINAR ---
     let idParaEliminar;
     $('#dataTableTiposTrabajo tbody').on('click', '.btn-eliminar', function() {
         idParaEliminar = $(this).data('id');
@@ -109,7 +108,7 @@ $(document).ready(function() {
         });
     });
 
-    // --- NUEVA LÓGICA PARA VALIDACIÓN DE FILTROS ---
+    // --- VALIDACIÓN DE FILTROS ---
     formFiltros.on('submit', function(e) {
         const ccMinInput = $(this).find('[name="filtro_cc_min"]');
         const ccMaxInput = $(this).find('[name="filtro_cc_max"]');

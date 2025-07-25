@@ -2,7 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 
-// La ruta debe ser relativa a la ubicación de este archivo.
+
 require_once '../vendor/autoload.php';
 require_once '../conecct/conex.php';
 
@@ -35,8 +35,7 @@ switch ($accion) {
             
             $mail = new PHPMailer(true);
             try {
-                // --- ¡CONFIGURACIÓN DEL SERVIDOR SMTP! ---
-                // $mail->SMTPDebug = SMTP::DEBUG_SERVER; // Descomenta esta línea para ver mensajes de depuración detallados
+                // Configuración del servidor SMTP
                 $mail->isSMTP();
                 $mail->Host       = 'smtp.gmail.com';
                 $mail->SMTPAuth   = true;

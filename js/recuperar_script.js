@@ -1,6 +1,6 @@
 $(document).ready(function() {
-    
-    // --- LÓGICA PARA LA PÁGINA DE SOLICITUD ---
+
+    // --- PÁGINA DE RECUPERACIÓN ---
     const formSolicitud = $('#formRecuperar');
     if (formSolicitud.length) {
         const emailInput = $('#email');
@@ -68,7 +68,7 @@ $(document).ready(function() {
         });
     }
 
-    // --- LÓGICA PARA LA PÁGINA DE RESETEO ---
+    // --- PÁGINA DE RESETEO ---
     const formReset = $('#formReset');
     if (formReset.length) {
         const passNuevaInput = $('#password_nueva');

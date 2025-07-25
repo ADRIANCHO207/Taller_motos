@@ -190,9 +190,9 @@ button[type="submit"]:hover {
 }
 
 /*
- * ===============================================
- *  DISEÑO RESPONSIVO PARA TODOS LOS DISPOSITIVOS
- * ===============================================
+    * --- Estilos Responsivos ---
+    * Aseguramos que el diseño se adapte bien a pantallas más pequeñas.
+    * Usamos media queries para ajustar el diseño en tablets y móviles.
 */
 
 /* Para tablets y móviles (pantallas de hasta 850px de ancho) */

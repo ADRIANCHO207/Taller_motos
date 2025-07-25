@@ -1,5 +1,3 @@
-// --- js/marcas.js (CORREGIDO) ---
-
 $(document).ready(function() {
 
     const formAgregar = $('#formAgregarMarca');
@@ -7,10 +5,9 @@ $(document).ready(function() {
     const modalAgregar = $('#modalAgregarMarca');
     const modalEditar = $('#modalEditarMarca');
 
-    // --- Función de validación mejorada ---
+    // --- Función de validación ---
     const validarMarca = (input) => {
         const valor = input.val().trim();
-        // ¡EXPRESIÓN REGULAR CORREGIDA! Solo letras, espacios, tildes y la ñ.
         const regex = /^[A-Za-zÑñÁáÉéÍíÓóÚú\s]+$/; 
         const feedback = input.next('.invalid-feedback');
         
@@ -30,7 +27,7 @@ $(document).ready(function() {
         return true;
     };
 
-    // --- LÓGICA PARA AGREGAR ---
+    // --- AGREGAR ---
     formAgregar.on('submit', function(e) {
         e.preventDefault();
         const input = formAgregar.find('[name="marca"]');
@@ -53,7 +50,7 @@ $(document).ready(function() {
         formAgregar.find('.is-invalid').removeClass('is-invalid');
     });
 
-    // --- LÓGICA PARA EDITAR ---
+    // --- EDITAR ---
     $('#dataTableMarcas tbody').on('click', '.btn-editar', function() {
         const id = $(this).data('id');
         const valor = $(this).data('valor');
@@ -79,7 +76,7 @@ $(document).ready(function() {
         }
     });
 
-    // --- LÓGICA PARA ELIMINAR ---
+    // --- ELIMINAR ---
     let idParaEliminar;
     $('#dataTableMarcas tbody').on('click', '.btn-eliminar', function() {
         idParaEliminar = $(this).data('id');
@@ -96,9 +93,7 @@ $(document).ready(function() {
             error: () => Swal.fire('Error', 'No se pudo conectar con el servidor', 'error')
         });
     });
-    // ==========================================================
-    // SECCIÓN 5: LÓGICA GENERAL DE LOS MODALES
-    // ==========================================================
+   
     // Función reutilizable para limpiar un formulario específico
     const limpiarFormulario = (formElement) => {
         if (formElement && formElement.length > 0) {
@@ -111,8 +106,6 @@ $(document).ready(function() {
 
     // --- Manejo específico del modal de AGREGAR ---
 
-    // 1. Al hacer clic en el botón "Cancelar" DENTRO del modal de AGREGAR
-    //    Usamos el ID del modal para ser específicos.
     $('#modalAgregarAdmin .btn-secondary').on('click', function() {
         limpiarFormulario(formAgregar);
     });

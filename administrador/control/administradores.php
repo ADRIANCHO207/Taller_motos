@@ -1,8 +1,4 @@
 <?php 
-// --- administradores.php (VERSIÓN CON PROTECCIÓN DE SESIÓN) ---
-
-// Incluimos el encabezado. Esto es crucial, ya que el header
-// debe contener el 'session_start()' y la validación de sesión.
 include '../header.php'; 
 
 $conexion = new mysqli('localhost', 'root', '', 'taller_motos');
@@ -10,11 +6,10 @@ if ($conexion->connect_error) {
     die("Error de conexión: " . $conexion->connect_error);
 }
 
-// 1. Obtenemos el ID del administrador actual desde la sesión.
+
 $id_admin_actual = $_SESSION['id_documento'] ?? 0;
 
 
-//    (Asegúrate de que la columna de ID en tu tabla se llame 'id_documento')
 $sql = "SELECT * FROM administradores WHERE id_documento != ?";
 $stmt = $conexion->prepare($sql);
 $stmt->bind_param("s", $id_admin_actual);
@@ -54,10 +49,7 @@ $resultado = $stmt->get_result();
                             <td><?php echo htmlspecialchars($row['telefono']); ?></td>
                             <td><?php echo htmlspecialchars($row['fecha_creacion']); ?></td>
                             <td>
-                                <!-- 
-                                    La condición IF ya no es necesaria aquí porque la consulta SQL
-                                    ya ha filtrado al usuario actual. Simplemente mostramos los botones.
-                                -->
+
                                 <button type="button" class="btn btn-warning btn-sm btn-editar" data-id="<?php echo $row['id_documento']; ?>">
                                     <i class="fas fa-edit"></i>
                                 </button>
@@ -141,7 +133,7 @@ $resultado = $stmt->get_result();
             </div>
         </div>
     </div>
-    <!-- === NUEVO MODAL PARA EDITAR === -->
+
 <div class="modal fade" id="modalEditarAdmin" tabindex="-1" role="dialog" aria-labelledby="modalEditarAdminLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -188,7 +180,7 @@ $resultado = $stmt->get_result();
     </div>
 </div>
 
-<!-- === NUEVO MODAL PARA CONFIRMAR ELIMINACIÓN === -->
+
 <div class="modal fade" id="modalEliminarAdmin" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -205,13 +197,12 @@ $resultado = $stmt->get_result();
 </div>
 
 </div>
-<!-- /.container-fluid -->
+
 
 <?php
-// Incluimos el pie de página y los scripts
 include '../scripts.php';
 
-// Cerramos la conexión
+
 $conexion->close();
 ?>
 <script>

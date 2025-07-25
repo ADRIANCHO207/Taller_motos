@@ -1,5 +1,4 @@
 <?php 
-// --- control/marcas.php (FILTRO CORREGIDO) ---
 include '../header.php'; 
 $conexion = new mysqli('localhost', 'root', '', 'taller_motos');
 if ($conexion->connect_error) { die("Error de conexión: " . $conexion->connect_error); }
@@ -8,14 +7,13 @@ $filtro_nombre = $_GET['filtro_nombre'] ?? '';
 
 $sql = "SELECT * FROM marcas"; 
 if (!empty($filtro_nombre)) {
-    // ¡AQUÍ ESTÁ LA MAGIA! Usamos LOWER() en ambos lados de la comparación.
+    // Usamos LOWER() en ambos lados de la comparación.
     $sql .= " WHERE LOWER(marcas) LIKE LOWER(?)"; 
 }
 $sql .= " ORDER BY marcas ASC";
 
 $stmt = $conexion->prepare($sql);
 if (!empty($filtro_nombre)) {
-    // No hay cambios aquí, el valor sigue siendo el mismo.
     $like_nombre = "%" . $filtro_nombre . "%";
     $stmt->bind_param("s", $like_nombre);
 }

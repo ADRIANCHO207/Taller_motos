@@ -1,10 +1,9 @@
 <?php 
-// --- control/tipos_trabajos.php ---
 include '../header.php'; 
 $conexion = new mysqli('localhost', 'root', '', 'taller_motos');
 if ($conexion->connect_error) { die("Error de conexión: " . $conexion->connect_error); }
 
-// --- Lógica de filtrado ---
+// --- filtrado ---
 $filtro_detalle = $_GET['filtro_detalle'] ?? '';
 $filtro_cc_min = $_GET['filtro_cc_min'] ?? '';
 $filtro_cc_max = $_GET['filtro_cc_max'] ?? '';

@@ -4,7 +4,6 @@ ob_start();
 // Cargar el autoloader de Composer, que maneja PhpSpreadsheet y otras librerías PSR-4
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../../vendor/setasign/fpdf/fpdf.php';
-// Incluir la conexión a la base de datos
 require_once __DIR__ . '/../../conecct/conex.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -70,7 +69,6 @@ if ($formato === 'excel') {
 
     foreach(range('A','E') as $columnID) { $sheet->getColumnDimension($columnID)->setAutoSize(true); }
 
-    // ¡PASO 2: Limpiar el búfer ANTES de enviar los headers!
     ob_end_clean();
 
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

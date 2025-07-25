@@ -1,4 +1,3 @@
-// --- js/motos.js ---
 $(document).ready(function() {
     const modalMoto = $('#modalMoto');
     const formMoto = $('#formMoto');
@@ -23,7 +22,7 @@ $(document).ready(function() {
     placaInput.on('input', toUpperCaseHandler);
     filtroPlacaInput.on('input', toUpperCaseHandler);
 
-    // --- Lógica para abrir el modal en modo AGREGAR ---
+    // --- abrir el modal en modo AGREGAR ---
     $('[data-target="#modalAgregarMoto"]').on('click', function() {
         formMoto[0].reset();
         formMoto.find('.is-invalid').removeClass('is-invalid');
@@ -33,7 +32,7 @@ $(document).ready(function() {
         modalMoto.modal('show');
     });
 
-    // --- Lógica para abrir el modal en modo EDITAR ---
+    // --- abrir el modal en modo EDITAR ---
     $('#dataTableMotos tbody').on('click', '.btn-editar', function() {
         const placaId = $(this).data('id');
         $.ajax({
@@ -104,8 +103,7 @@ $(document).ready(function() {
     });
     
    // ==========================================================
-    // SECCIÓN DE LÓGICA PARA ELIMINAR (COMPLETADA)
-    // ==========================================================
+    // --- ELIMINAR ---
     
     let placaParaEliminar;
 

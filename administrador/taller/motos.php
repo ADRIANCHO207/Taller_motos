@@ -1,5 +1,4 @@
 <?php
-// --- control/motos.php ---
 include '../header.php'; 
 $conexion = new mysqli('localhost', 'root', '', 'taller_motos');
 if ($conexion->connect_error) { die("Error de conexión: " . $conexion->connect_error); }
@@ -11,7 +10,7 @@ $referencias = $conexion->query("SELECT rm.id_referencia, CONCAT(m.marcas, ' - '
 $modelos = $conexion->query("SELECT id_modelo, anio FROM modelos ORDER BY anio DESC")->fetch_all(MYSQLI_ASSOC);
 $colores = $conexion->query("SELECT id_color, color FROM color ORDER BY color ASC")->fetch_all(MYSQLI_ASSOC);
 
-// --- Lógica de filtrado ---
+// --- filtrado ---
 $sql = "SELECT 
             mo.id_placa, 
             cli.nombre AS nombre_cliente, cli.id_documento_cli,

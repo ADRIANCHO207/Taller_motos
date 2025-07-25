@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recuperar Contraseña - Administrador</title>
-    <!-- Font Awesome para los iconos -->
+  
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- Reutiliza los estilos del login -->
     <link rel="stylesheet" href="css/login_styles.css"> 
@@ -39,12 +39,8 @@
         </div>
     </div>
 
-    <!-- === ¡CORRECCIÓN CLAVE! AÑADIMOS JQUERY ANTES DE TU SCRIPT === -->
-    <!-- 1. Cargar jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- 2. Cargar SweetAlert2 (lo necesitarás para las alertas) -->
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- 3. AHORA SÍ, cargar tu script personalizado -->
     <script src="js/recuperar_script.js"></script>
 </body>
 </html>

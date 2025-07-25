@@ -46,7 +46,7 @@ $(document).ready(function() {
         return true;
     };
 
-    // --- LÓGICA PARA AGREGAR ---
+    // --- AGREGAR ---
     // Validaciones en tiempo real
     formAgregar.find('[name="id_marcas"]').on('change', e => validarCampo($(e.target)));
     formAgregar.find('[name="referencia_marca"]').on('input', e => validarReferenciaInput($(e.target)));
@@ -68,11 +68,11 @@ $(document).ready(function() {
         }
     });
     
-    // --- LÓGICA PARA EDITAR ---
+    // --- EDITAR ---
     // Validaciones en tiempo real
     formEditar.find('[name="id_marcas"]').on('change', e => validarCampo($(e.target)));
     formEditar.find('[name="referencia_marca"]').on('input', e => validarReferenciaInput($(e.target)));
-    // --- LÓGICA PARA EDITAR ---
+    // --- EDITAR ---
     $('#dataTableReferencias tbody').on('click', '.btn-editar', function() {
         const id = $(this).data('id');
         $.ajax({
@@ -105,7 +105,7 @@ $(document).ready(function() {
         }
     });
 
-    // --- LÓGICA PARA ELIMINAR ---
+    // --- ELIMINAR ---
     let idParaEliminar;
     $('#dataTableReferencias tbody').on('click', '.btn-eliminar', function() {
         idParaEliminar = $(this).data('id');
@@ -121,9 +121,8 @@ $(document).ready(function() {
             }
         });
     });
-    // ==========================================================
-    // SECCIÓN 5: LÓGICA GENERAL DE LOS MODALES
-    // ==========================================================
+    
+
     // Función reutilizable para limpiar un formulario específico
     const limpiarFormulario = (formElement) => {
         if (formElement && formElement.length > 0) {

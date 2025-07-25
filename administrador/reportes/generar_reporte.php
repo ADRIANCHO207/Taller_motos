@@ -10,7 +10,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
-// ¡CLAVE! Establecer la zona horaria para que la fecha sea precisa
+// Establecer la zona horaria para que la fecha sea precisa
 date_default_timezone_set('America/Bogota');
 
 $db = new Database();
@@ -118,7 +118,7 @@ $config_reportes = [
     'sql' => "SELECT id_cc, cilindraje FROM cilindraje",
     'encabezados' => ['ID', 'Cilindraje'],
     'columnas' => ['id_cc', 'cilindraje'],
-    'filtro_rango' => 'cilindraje', // ¡NUEVA PROPIEDAD!
+    'filtro_rango' => 'cilindraje', 
     'pdf_widths' => [20, 80]
     ],
 
@@ -127,7 +127,7 @@ $config_reportes = [
         'sql' => "SELECT id_modelo, anio FROM modelos",
         'encabezados' => ['ID', 'Año'],
         'columnas' => ['id_modelo', 'anio'],
-        'filtro_rango' => 'anio', // ¡NUEVA PROPIEDAD!
+        'filtro_rango' => 'anio', 
         'pdf_widths' => [20, 80]
     ],
 
@@ -148,7 +148,7 @@ $config_reportes = [
         'filtro_texto' => ['detalle'],
         'pdf_widths' => [40, 80, 40, 40, 40] // Anchos para 5 columnas
     ],
-    // Añade aquí el resto de tus reportes
+   
 ];
 
 if (!isset($config_reportes[$tipo_reporte])) { 
@@ -190,7 +190,7 @@ if (!empty($rango_inicio) && !empty($rango_fin) && isset($config['filtro_rango']
     $params[':rango_fin'] = $rango_fin;
 }
 
-// --- ¡LÓGICA DE CONSTRUCCIÓN DE CONSULTA CORREGIDA! ---
+// --- CONSULTA ---
 if (!empty($where)) {
     $sql .= " WHERE " . implode(' AND ', $where);
 }
@@ -198,13 +198,13 @@ if (isset($config['group_by'])) {
     $sql .= $config['group_by'];
 }
 // Siempre puedes añadir un ORDER BY al final si lo tienes en la config
-// if (isset($config['order_by'])) {
-//     $sql .= $config['order_by'];
-// }
-// --- FIN DE LA CORRECCIÓN ---
+if (isset($config['order_by'])) {
+    $sql .= $config['order_by'];
+}
+
 
 $stmt = $conexion->prepare($sql);
-$stmt->execute($params); // Solo se ejecuta UNA VEZ
+$stmt->execute($params); 
 $datos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $stmt->execute($params);
@@ -226,14 +226,14 @@ if (empty($datos)) {
     exit;
 }
 
-$logoPath = realpath(__DIR__ . '/../../img/logo.jpg'); // Ruta absoluta al logo
+$logoPath = realpath(__DIR__ . '/../../img/logo.jpg'); 
 
 if ($formato === 'excel') {
     $spreadsheet = new Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
     $sheet->setTitle(substr(ucfirst($tipo_reporte), 0, 30));
 
-    // 1. Añadir el logo si la ruta es válida
+    //  Añadir el logo si la ruta es válida
     if ($logoPath && file_exists($logoPath)) {
         $drawing = new Drawing();
         $drawing->setName('Logo Taller');
@@ -245,7 +245,7 @@ if ($formato === 'excel') {
         $sheet->getRowDimension('1')->setRowHeight(65);
     }
 
-    // 2. Título y subtítulo al lado del logo
+    //  Título y subtítulo al lado del logo
     $lastColumn = Coordinate::stringFromColumnIndex(count($config['encabezados']));
     $sheet->mergeCells('B2:' . $lastColumn . '2');
     $sheet->setCellValue('B2', $titulo_completo);
@@ -256,7 +256,7 @@ if ($formato === 'excel') {
     $sheet->setCellValue('B3', 'Generado el ' . date('d/m/Y H:i:s'));
     $sheet->getStyle('B3')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
     
-    // 3. Encabezados de la tabla
+    //  Encabezados de la tabla
     $headerRow = 6;
     $sheet->fromArray($config['encabezados'], NULL, 'A' . $headerRow);
     $headerStyle = [
@@ -266,7 +266,7 @@ if ($formato === 'excel') {
     ];
     $sheet->getStyle('A' . $headerRow . ':' . $lastColumn . $headerRow)->applyFromArray($headerStyle);
     
-    // 4. Preparar y llenar datos
+    //  Preparar y llenar datos
     $datos_para_excel = [];
     foreach ($datos as $fila_dato) {
         $fila_ordenada = [];
@@ -280,7 +280,7 @@ if ($formato === 'excel') {
     }
     $sheet->fromArray($datos_para_excel, NULL, 'A' . ($headerRow + 1));
     
-    // 5. Añadir fila de totales si es un reporte de mantenimientos
+    //  Añadir fila de totales si es un reporte de mantenimientos
     if ($tipo_reporte === 'mantenimientos') {
         $total_mantenimientos = array_sum(array_column($datos, 'total'));
         $ultima_fila = $headerRow + count($datos) + 1;
@@ -292,7 +292,7 @@ if ($formato === 'excel') {
         $sheet->getStyle($lastColumn . $ultima_fila)->getNumberFormat()->setFormatCode('"$"#,##0.00');
     }
     
-    // 6. Autoajustar ancho de columnas
+    //  Autoajustar ancho de columnas
     foreach(range('A', $lastColumn) as $columnID) {
         $sheet->getColumnDimension($columnID)->setAutoSize(true);
     }
@@ -355,7 +355,7 @@ if ($formato === 'excel') {
     }
 
     $pdf = new PDF('L', 'mm', 'A4');
-    $pdf->logoPath = $logoPath; // Pasamos la ruta del logo a nuestra clase PDF
+    $pdf->logoPath = $logoPath; 
     $pdf->titulo = $titulo_completo;
     $pdf->encabezados = $config['encabezados'];
     $pdf->widths = $config['pdf_widths'];

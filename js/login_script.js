@@ -1,5 +1,3 @@
-// --- js/login_script.js (VERSIÓN CON MEJOR DEPURACIÓN) ---
-
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const documentoInput = document.getElementById('documento');
@@ -36,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
     documentoInput.addEventListener('input', () => validateField(documentoInput, documentoRegex, 'Debe tener entre 6 y 10 números.'));
     passwordInput.addEventListener('input', () => validateField(passwordInput, passwordRegex, 'Debe tener entre 8 y 16 caracteres.'));
 
-    // (El evento submit es el que vamos a mejorar)
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault(); 
         formMessage.textContent = '';
@@ -54,7 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isDocumentoValid && isPasswordValid) {
             const formData = new FormData(loginForm);
             
-            // Aquí hacemos la petición AJAX
             fetch('includes/inicio.php', {
                 method: 'POST',
                 body: formData

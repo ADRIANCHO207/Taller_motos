@@ -1,5 +1,4 @@
 <?php 
-// --- control/reportes.php (VERSIÓN CON TABLA DE RESULTADOS) ---
 include '../header.php'; 
 ?>
 
@@ -59,7 +58,7 @@ include '../header.php';
                         </div>
                     </div>
 
-                    <!-- ¡NUEVO! Filtro por Rango Numérico -->
+                    <!--  Filtro por Rango Numérico -->
                     <div id="filtro_number" class="filtro-dinamico" style="display:none;">
                         <div class="row">
                             <div class="col-md-6 form-group">
@@ -90,12 +89,11 @@ include '../header.php';
         </div>
     </div>
 
-    <!-- Tarjeta de resultados (CORREGIDA) -->
+    <!-- Tarjeta de resultados  -->
     <div class="card shadow mb-4" id="cardResultados" style="display: none;">
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
             <h6 class="m-0 font-weight-bold text-primary" id="tituloResultado">Resultados del Reporte</h6>
             <div>
-                <!-- ¡CAMBIO! Quitar ID, usar clase 'btn-exportar' y añadir data-formato -->
                 <button type="button" class="btn btn-success btn-sm btn-exportar" data-formato="excel"><i class="fas fa-file-excel"></i> Exportar a Excel</button>
                 <button type="button" class="btn btn-danger btn-sm btn-exportar" data-formato="pdf"><i class="fas fa-file-pdf"></i> Exportar a PDF</button>
             </div>

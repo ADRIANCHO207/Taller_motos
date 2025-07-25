@@ -3,7 +3,7 @@ include '../header.php';
 $conexion = new mysqli('localhost', 'root', '', 'taller_motos');
 if ($conexion->connect_error) { die("Error de conexión: " . $conexion->connect_error); }
 
-// --- Lógica de filtrado ---
+// ---filtrado ---
 $filtro_busqueda = $_GET['filtro_busqueda'] ?? '';
 $sql = "SELECT rm.id_referencia, rm.referencia_marca, m.marcas 
         FROM referencia_marca rm

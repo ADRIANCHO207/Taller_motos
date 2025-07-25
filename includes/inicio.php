@@ -1,5 +1,4 @@
 <?php
-// --- inicio.php (Versión a prueba de errores) ---
 
 session_start();
 require_once('../conecct/conex.php'); 

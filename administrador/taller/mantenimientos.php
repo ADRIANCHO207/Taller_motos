@@ -1,5 +1,4 @@
 <?php 
-// --- control/mantenimientos.php ---
 include '../header.php'; 
 $conexion = new mysqli('localhost', 'root', '', 'taller_motos');
 if ($conexion->connect_error) { die("Error de conexión: " . $conexion->connect_error); }
@@ -8,7 +7,7 @@ if ($conexion->connect_error) { die("Error de conexión: " . $conexion->connect_
 $motos_result = $conexion->query("SELECT mo.id_placa, cli.nombre FROM motos mo JOIN clientes cli ON mo.id_documento_cli = cli.id_documento_cli ORDER BY mo.id_placa ASC");
 $tipos_trabajo = $conexion->query("SELECT id_tipo, detalle, precio_unitario FROM tipo_trabajo ORDER BY detalle ASC")->fetch_all(MYSQLI_ASSOC);
 
-// --- Lógica de filtrado ---
+// --- filtrado ---
 $filtro_placa = $_GET['filtro_placa'] ?? '';
 $filtro_inicio = $_GET['filtro_inicio'] ?? '';
 $filtro_fin = $_GET['filtro_fin'] ?? '';
@@ -111,7 +110,7 @@ $resultado = $stmt->get_result();
                             <h6>2. Trabajos Realizados</h6>
                             <div class="card p-3">
                                 <div class="row align-items-end">
-                                    <!-- ¡NUEVO BUSCADOR! -->
+                                    
                                     <div class="col-md-7 form-group">
                                         <label>Buscar tipo de trabajo (mín. 2 letras)</label>
                                         <input type="text" class="form-control" id="inputBuscarTrabajo" placeholder="Ej: Cambio de...">
@@ -200,7 +199,6 @@ $resultado = $stmt->get_result();
 <script>
 $(document).ready(function() {
     $('#dataTableMantenimientos').DataTable({
-        // --- CONFIGURACIÓN DE IDIOMA Y OTRAS OPCIONES (sin cambios) ---
         "language": { "sProcessing":     "Procesando...",
             "sLengthMenu":     "Mostrar _MENU_ mantenimientos",
             "sZeroRecords":    "No se encontraron mantenimientos",
@@ -247,7 +245,6 @@ $(document).ready(function() {
         "pageLength": 10,
         "order": [[3, 'desc']], // Ordenar por fecha descendente
 
-        // --- ¡AQUÍ ESTÁ LA SOLUCIÓN! ---
         "columnDefs": [
             {
                 // Columna de Acciones (índice -1 desde el final)
@@ -290,7 +287,6 @@ $(document).ready(function() {
             }
         ],
 
-        // --- OTRAS CONFIGURACIONES (sin cambios) ---
         "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
                "<'row'<'col-sm-12'tr>>" +
                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",

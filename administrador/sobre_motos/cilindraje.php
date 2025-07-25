@@ -1,10 +1,9 @@
 <?php 
-// --- control/cilindraje.php (LÓGICA PHP MEJORADA) ---
 include '../header.php'; 
 $conexion = new mysqli('localhost', 'root', '', 'taller_motos');
 if ($conexion->connect_error) { die("Error de conexión: " . $conexion->connect_error); }
 
-// --- Lógica de filtrado por rango de cilindraje ---
+// --- filtrado por rango de cilindraje ---
 $filtro_min = $_GET['filtro_min'] ?? '';
 $filtro_max = $_GET['filtro_max'] ?? '';
 

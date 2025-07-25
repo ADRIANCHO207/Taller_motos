@@ -1,4 +1,3 @@
-// --- js/perfil.js (VERSIÓN COMPLETA Y FINAL) ---
 $(document).ready(function() {
     const modalPerfil = $('#modalPerfilAdmin');
     const formPerfil = $('#formPerfilAdmin');
@@ -8,8 +7,8 @@ $(document).ready(function() {
         email: { regex: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/, mensaje: 'Formato de email incorrecto.' },
         password: { regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,16}$/, mensaje: '8-16 chars, 1 mayúscula, 1 minúscula y 1 número.' }
     };
-    
-    // --- ¡FUNCIÓN CLAVE QUE FALTABA! ---
+
+    // Función para validar campos
     const validarCampo = (input, regla, esObligatorio = true) => {
         const valor = input.val().trim();
         const feedback = input.next('.invalid-feedback');
@@ -36,9 +35,9 @@ $(document).ready(function() {
         }
     };
 
-    // --- LÓGICA DEL MODAL DE PERFIL ---
+    // --- MODAL DE PERFIL ---
 
-    // 1. Cargar datos al abrir el modal
+    // Cargar datos al abrir el modal
     modalPerfil.on('show.bs.modal', function() {
         formPerfil[0].reset();
         formPerfil.find('.is-valid, .is-invalid').removeClass('is-valid is-invalid');
@@ -54,7 +53,7 @@ $(document).ready(function() {
         });
     });
 
-    // 2. Validaciones en tiempo real
+    //  Validaciones en tiempo real
     $('#perfil_telefono').on('input', e => validarCampo($(e.target), reglas.telefono));
     $('#perfil_email').on('input', e => validarCampo($(e.target), reglas.email));
     
@@ -80,7 +79,7 @@ $(document).ready(function() {
         }
     });
 
-    // 3. Envío del formulario
+    //  Envío del formulario
     formPerfil.on('submit', function(e) {
         e.preventDefault();
 

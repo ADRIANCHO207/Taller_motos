@@ -1,4 +1,3 @@
-// --- js/dashboard.js (VERSIÓN FINAL, UNIFICADA Y CORREGIDA) ---
 $(document).ready(function() {
     
     // Función para formatear a moneda colombiana
@@ -83,8 +82,8 @@ $(document).ready(function() {
                     $('#ganancias-mes').text(formatCurrency(data.ganancias_mes));
                     $('#ganancias-anio').text(formatCurrency(data.ganancias_anio));
                     $('#mantenimientos-mes').text(data.mantenimientos_mes);
-                    $('#clientes-mes').text(data.clientes_mes); // CORRECCIÓN
-                    $('#motos-mes').text(data.motos_mes);       // CORRECCIÓN
+                    $('#clientes-mes').text(data.clientes_mes); 
+                    $('#motos-mes').text(data.motos_mes);       
 
                     // Llenar tabla de auditoría y LUEGO inicializar DataTable
                     const tablaAuditoriaBody = $('#tablaAuditoria tbody');

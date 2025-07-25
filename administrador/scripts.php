@@ -1,5 +1,4 @@
 <?php
-// --- footer.php ---
 include 'C:/xampp/htdocs/Taller_motos/includes/validarsession.php';
 ?>
 
@@ -8,7 +7,7 @@ include 'C:/xampp/htdocs/Taller_motos/includes/validarsession.php';
         <i class="fas fa-angle-up"></i>
     </a>
 
-     <!-- === ¡NUEVO! MODAL PARA PERFIL DE ADMINISTRADOR === -->
+     <!-- === MODAL PARA PERFIL DE ADMINISTRADOR === -->
     <div class="modal fade" id="modalPerfilAdmin" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -120,7 +119,7 @@ include 'C:/xampp/htdocs/Taller_motos/includes/validarsession.php';
     }
     ?>
     
-    <!-- 5. ¡TUS SCRIPTS PERSONALIZADOS SIEMPRE AL FINAL! -->
+
     <!-- Estos scripts dependen de jQuery, por lo que deben cargarse después -->
     <script src="<?php echo JS_URL; ?>/perfil.js"></script> <!-- Este script ahora funcionará -->
 

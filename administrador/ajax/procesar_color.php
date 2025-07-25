@@ -1,11 +1,11 @@
 <?php
-// ajax/procesar_color.php (VERSIÓN FINAL CON PDO Y AUDITORÍA)
+
 session_start();
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../conecct/conex.php';
 
 $db = new Database();
-$conexion = $db->conectar(); // $conexion es un objeto PDO
+$conexion = $db->conectar();
 
 // Establecer la variable de sesión de MySQL para los Triggers
 $id_admin_actual = $_SESSION['id_documento'] ?? 'sistema';

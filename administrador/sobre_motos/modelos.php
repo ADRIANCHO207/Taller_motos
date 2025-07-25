@@ -1,10 +1,9 @@
 <?php 
-// --- control/modelos.php ---
 include '../header.php'; 
 $conexion = new mysqli('localhost', 'root', '', 'taller_motos');
 if ($conexion->connect_error) { die("Error de conexión: " . $conexion->connect_error); }
 
-// --- Lógica de filtrado por rango de años ---
+// --- filtrado por rango de años ---
 $filtro_inicio = $_GET['filtro_inicio'] ?? '';
 $filtro_fin = $_GET['filtro_fin'] ?? '';
 
@@ -40,7 +39,7 @@ $resultado = $stmt->get_result();
                     </div>
                     <div class="col-md-4">
                         <label for="filtro_fin">Hasta el año:</label>
-                        <input type="number" id="filtro_fin" name="filtro_fin" class="form-control" placeholder="Ej: 2025" value="<?php echo htmlspecialchars($filtro_fin); ?>">
+                        <input type="number" id="filtro_fin" name="filtro_fin" class="form-control" placeholder="Ej: 2026" value="<?php echo htmlspecialchars($filtro_fin); ?>">
                     </div>
                     <div class="col-md-4 d-flex align-items-end">
                         <button type="submit" class="btn btn-success"><i class="fas fa-filter"></i> Filtrar</button>

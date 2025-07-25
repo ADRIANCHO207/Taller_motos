@@ -48,6 +48,7 @@ if (!$stmt->fetch()) {
             </div>
         </div>
     </div>
+    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/recuperar_script.js"></script>

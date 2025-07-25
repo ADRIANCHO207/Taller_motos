@@ -1,11 +1,10 @@
 <?php
-// ajax/procesar_modelo.php (VERSIÓN FINAL CON PDO Y AUDITORÍA)
 session_start();
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../conecct/conex.php';
 
 $db = new Database();
-$conexion = $db->conectar(); // $conexion es un objeto PDO
+$conexion = $db->conectar(); 
 
 // Establecer la variable de sesión de MySQL para los Triggers
 $id_admin_actual = $_SESSION['id_documento'] ?? 'sistema';
@@ -52,7 +51,7 @@ switch ($accion) {
             exit;
         }
         
-        // Verificar duplicados (excluyendo el registro actual)
+        // Verificar duplicados
         $stmt = $conexion->prepare("SELECT id_modelo FROM modelos WHERE anio = :anio AND id_modelo != :id_modelo");
         $stmt->execute([':anio' => $anio, ':id_modelo' => $id_modelo]);
         if ($stmt->fetch()) {

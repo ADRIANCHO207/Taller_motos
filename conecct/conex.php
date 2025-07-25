@@ -1,5 +1,5 @@
 <?php
-// Apertura del bloque PHP para la clase de conexión a base de datos
+
 
 // Definición de la clase Database para manejar conexiones a MySQL
 class Database
@@ -26,10 +26,10 @@ class Database
             $this->password = '';                    // Sin contraseña en XAMPP local
         } else {
             // 🌐 Configuración para entorno de producción (Hostinger u otro hosting)
-            $this->hostname = 'localhost';                    // Servidor de producción
-            $this->database = 'u148394603_flota_agc';        // Nombre de la base de datos en producción
-            $this->username = 'u148394603_flota_agc';        // Usuario de la base de datos en producción
-            $this->password = 'Faridgomez04';                // Contraseña de la base de datos en producción
+            $this->hostname = '';                    // Servidor de producción
+            $this->database = '';        // Nombre de la base de datos en producción
+            $this->username = '';        // Usuario de la base de datos en producción
+            $this->password = '';                // Contraseña de la base de datos en producción
         }
     }
 

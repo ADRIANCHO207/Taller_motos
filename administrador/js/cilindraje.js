@@ -1,5 +1,3 @@
-// --- js/cilindraje.js ---
-
 $(document).ready(function() {
 
     
@@ -69,7 +67,7 @@ $(document).ready(function() {
         return true;
     };
 
-    // --- LÓGICA PARA AGREGAR ---
+    // --- AGREGAR ---
     formAgregar.on('submit', function(e) {
         e.preventDefault();
         const input = formAgregar.find('[name="cilindraje"]');
@@ -88,7 +86,7 @@ $(document).ready(function() {
     // Limpiar modal de agregar al abrir
     modalAgregar.on('show.bs.modal', () => formAgregar[0].reset());
 
-    // --- LÓGICA PARA EDITAR ---
+    // --- EDITAR ---
     $('#dataTableCilindraje tbody').on('click', '.btn-editar', function() {
         const id = $(this).data('id');
         const valor = $(this).data('valor');
@@ -113,7 +111,7 @@ $(document).ready(function() {
         }
     });
 
-    // --- LÓGICA PARA ELIMINAR ---
+    // --- ELIMINAR ---
     let idParaEliminar;
     $('#dataTableCilindraje tbody').on('click', '.btn-eliminar', function() {
         idParaEliminar = $(this).data('id');
@@ -129,9 +127,8 @@ $(document).ready(function() {
             }
         });
     });
-    // ==========================================================
-    // SECCIÓN 5: LÓGICA GENERAL DE LOS MODALES
-    // ==========================================================
+
+
     // Función reutilizable para limpiar un formulario específico
     const limpiarFormulario = (formElement) => {
         if (formElement && formElement.length > 0) {

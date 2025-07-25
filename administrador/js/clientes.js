@@ -1,10 +1,6 @@
 
 $(document).ready(function() {
     
-    // ==========================================================
-    // SECCIÓN 1: CONFIGURACIÓN Y FUNCIONES REUTILIZABLES
-    // ==========================================================
-    
     // --- Referencias a los elementos del DOM ---
     const modalAgregar = $('#modalAgregarCliente'), formAgregar = $('#formAgregarCliente');
     const modalEditar = $('#modalEditarCliente'), formEditar = $('#formEditarCliente');
@@ -62,10 +58,6 @@ $(document).ready(function() {
         }
     };
 
-    // ==========================================================
-    // SECCIÓN 2: LÓGICA PARA AGREGAR NUEVO CLIENTE
-    // ==========================================================
-
     // Validaciones en tiempo real para AGREGAR
     formAgregar.find('[name="documento"]').on('input', e => validarCampo($(e.target), reglas.documento));
     formAgregar.find('[name="nombre"]').on('input', e => validarCampo($(e.target), reglas.nombre));
@@ -98,9 +90,6 @@ $(document).ready(function() {
         }
     });
 
-    // ==========================================================
-    // SECCIÓN 3: LÓGICA PARA EDITAR CLIENTE
-    // ==========================================================
 
     // Validaciones en tiempo real para EDITAR
     formEditar.find('[name="nombre"]').on('input', e => validarCampo($(e.target), reglas.nombre));
@@ -157,9 +146,6 @@ $(document).ready(function() {
         }
     });
 
-    // ==========================================================
-    // SECCIÓN 4: LÓGICA PARA ELIMINAR CLIENTE
-    // ==========================================================
     
     let clienteIdParaEliminar;
     $('#dataTableClientes tbody').on('click', '.btn-eliminar', function() {
@@ -175,18 +161,13 @@ $(document).ready(function() {
             }
         });
     });
-    // --- js/clientes.js ---
 
 
-    // ==========================================================
-    // NUEVA LÓGICA PARA LA VALIDACIÓN DE FILTROS
-    // ==========================================================
-    
     const formFiltros = $('#formFiltros');
     const fechaInicioInput = $('#fecha_inicio');
     const fechaFinInput = $('#fecha_fin');
     
-    // --- NUEVA VALIDACIÓN DE FECHAS EN FILTROS ---
+    // --- VALIDACIÓN DE FECHAS EN FILTROS ---
     const validarFiltroFechas = () => {
         const fechaInicio = fechaInicioInput.val();
         const fechaFin = fechaFinInput.val();
@@ -214,9 +195,6 @@ $(document).ready(function() {
     });
 
 
-    // ==========================================================
-    // SECCIÓN 5: LÓGICA GENERAL DE LOS MODALES
-    // ==========================================================
     // Función reutilizable para limpiar un formulario específico
     const limpiarFormulario = (formElement) => {
         if (formElement && formElement.length > 0) {
@@ -229,8 +207,6 @@ $(document).ready(function() {
 
     // --- Manejo específico del modal de AGREGAR ---
 
-    // 1. Al hacer clic en el botón "Cancelar" DENTRO del modal de AGREGAR
-    //    Usamos el ID del modal para ser específicos.
     $('#modalAgregarCliente .btn-secondary').on('click', function() {
         limpiarFormulario(formAgregar);
     });

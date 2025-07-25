@@ -27,7 +27,7 @@ $stmt_details->bind_param("i", $id_mantenimiento);
 $stmt_details->execute();
 $detalles = $stmt_details->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// --- LÓGICA PARA GENERAR LA URL PÚBLICA (CORREGIDA) ---
+
 $protocolo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $nombre_dominio = $_SERVER['HTTP_HOST'];
 $ruta_script = $_SERVER['REQUEST_URI'];

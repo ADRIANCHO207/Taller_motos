@@ -1,8 +1,7 @@
 <?php
-// ajax/obtener_datos_dashboard.php (VERSIÓN MEJORADA)
 session_start();
 header('Content-Type: application/json');
-require_once('C:/xampp/htdocs/Taller_motos/conecct/conex.php'); // Asegúrate que la ruta sea correcta
+require_once('C:/xampp/htdocs/Taller_motos/conecct/conex.php');
 $db = new Database();
 $conexion = $db->conectar();
 

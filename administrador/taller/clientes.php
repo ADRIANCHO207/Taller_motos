@@ -1,5 +1,4 @@
 <?php 
-// --- control/clientes.php ---
 include '../header.php'; 
 $conexion = new mysqli('localhost', 'root', '', 'taller_motos');
 if ($conexion->connect_error) { die("Error de conexión: " . $conexion->connect_error); }
@@ -60,19 +59,22 @@ $resultado = $stmt->get_result();
     <div class="card-body">
         <form id="formFiltros" method="GET" action="clientes.php">
             <div class="row">
-                <!-- Nuevo campo de búsqueda -->
+
                 <div class="col-md-4 mb-3">
                     <label for="busqueda">Buscar por Nombre o Documento:</label>
                     <input type="text" id="busqueda" name="busqueda" class="form-control" placeholder="Escribe aquí..." value="<?php echo htmlspecialchars($_GET['busqueda'] ?? ''); ?>">
                 </div>
+
                 <div class="col-md-3 mb-3">
                     <label for="fecha_inicio">Fecha Inicio:</label>
                     <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control" value="<?php echo htmlspecialchars($_GET['fecha_inicio'] ?? ''); ?>">
                 </div>
+
                 <div class="col-md-3 mb-3">
                     <label for="fecha_fin">Fecha Fin:</label>
                     <input type="date" id="fecha_fin" name="fecha_fin" class="form-control" value="<?php echo htmlspecialchars($_GET['fecha_fin'] ?? ''); ?>">
                 </div>
+
                 <div class="col-md-2 d-flex align-items-end mb-3">
                     <button type="submit" class="btn btn-success"><i class="fas fa-filter"></i> Filtrar</button>
                     <a href="clientes.php" class="btn btn-secondary ml-2" title="Limpiar filtros"><i class="fas fa-times"></i></a>
@@ -197,7 +199,7 @@ $resultado = $stmt->get_result();
 // Incluimos el pie de página y los scripts
 include '../scripts.php';
 
-// Cerramos la conexión
+
 $conexion->close();
 ?>
 

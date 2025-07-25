@@ -1,5 +1,3 @@
-// --- js/colores.js ---
-
 $(document).ready(function() {
 
     const formAgregar = $('#formAgregarColor');
@@ -27,7 +25,7 @@ $(document).ready(function() {
         return true;
     };
 
-    // --- LÓGICA PARA AGREGAR ---
+    // --- AGREGAR ---
     formAgregar.on('submit', function(e) {
         e.preventDefault();
         const input = formAgregar.find('[name="color"]');
@@ -48,7 +46,7 @@ $(document).ready(function() {
         formAgregar.find('.is-invalid').removeClass('is-invalid');
     });
 
-    // --- LÓGICA PARA EDITAR ---
+    // --- EDITAR ---
     $('#dataTableColores tbody').on('click', '.btn-editar', function() {
         const id = $(this).data('id');
         const valor = $(this).data('valor');
@@ -74,7 +72,7 @@ $(document).ready(function() {
         }
     });
 
-    // --- LÓGICA PARA ELIMINAR ---
+    // --- ELIMINAR ---
     let idParaEliminar;
     $('#dataTableColores tbody').on('click', '.btn-eliminar', function() {
         idParaEliminar = $(this).data('id');

@@ -1,13 +1,12 @@
 <?php 
-// --- control/colores.php ---
 include '../header.php'; 
 $conexion = new mysqli('localhost', 'root', '', 'taller_motos');
 if ($conexion->connect_error) { die("Error de conexión: " . $conexion->connect_error); }
 
-// --- Lógica de filtrado por nombre de color ---
+// --- filtrado por nombre de color ---
 $filtro_nombre = $_GET['filtro_nombre'] ?? '';
 
-$sql = "SELECT * FROM color"; // Asegúrate que tu tabla se llame 'color'
+$sql = "SELECT * FROM color"; 
 if (!empty($filtro_nombre)) {
     // Búsqueda case-insensitive
     $sql .= " WHERE LOWER(color) LIKE LOWER(?)"; 

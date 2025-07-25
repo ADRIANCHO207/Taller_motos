@@ -1,6 +1,5 @@
 $(document).ready(function() {
 
-    // --- Referencias a los elementos del DOM ---
     const formAgregar = $('#formAgregarModelo');
     const formEditar = $('#formEditarModelo');
     const modalAgregar = $('#modalAgregarModelo');
@@ -24,8 +23,6 @@ $(document).ready(function() {
         return true;
     };
     
-    // ==========================================================
-    // LÓGICA PARA LA VALIDACIÓN DE FILTROS (COMPLETADA)
     // ==========================================================
     
     formFiltros.on('submit', function(e) {
@@ -74,8 +71,7 @@ $(document).ready(function() {
     });
 
     // ==========================================================
-    // LÓGICA PARA AGREGAR
-    // ==========================================================
+
     formAgregar.on('submit', function(e) {
         e.preventDefault();
         const input = formAgregar.find('[name="anio"]');
@@ -97,8 +93,7 @@ $(document).ready(function() {
     });
 
     // ==========================================================
-    // LÓGICA PARA EDITAR
-    // ==========================================================
+
     $('#dataTableAnios tbody').on('click', '.btn-editar', function() {
         const id = $(this).data('id');
         const valor = $(this).data('valor');
@@ -123,8 +118,6 @@ $(document).ready(function() {
         }
     });
 
-    // ==========================================================
-    // LÓGICA PARA ELIMINAR
     // ==========================================================
     let idParaEliminar;
     $('#dataTableAnios tbody').on('click', '.btn-eliminar', function() {

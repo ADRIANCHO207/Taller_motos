@@ -1,4 +1,3 @@
-// --- js/reportes.js (VERSIÓN FINAL Y CORREGIDA) ---
 $(document).ready(function() {
     
     const tipoReporteSelect = $('#tipo_reporte');
@@ -7,7 +6,7 @@ $(document).ready(function() {
     let dataTableInstance = null;
     let parametrosActuales = '';
 
-    // ¡CONFIGURACIÓN CORREGIDA!
+    // ¡CONFIGURACIÓN!
     const configFiltros = {
         'actividad': ['fechas', 'texto'],
         'mantenimientos': ['fechas', 'texto'],
@@ -47,8 +46,8 @@ $(document).ready(function() {
     }
 
     let params = { tipo: tipo };
-    
-    // --- LÓGICA DE VALIDACIÓN DE FECHAS MEJORADA ---
+
+    // --- VALIDACIÓN DE FECHAS ---
     if ($('#filtro_fechas').is(':visible')) {
         const inicio = $('[name="inicio"]').val();
         const fin = $('[name="fin"]').val();
@@ -61,7 +60,7 @@ $(document).ready(function() {
             return null; // Detener la ejecución
         }
         
-        // ¡NUEVA VALIDACIÓN! Comprobar que las fechas no sean futuras
+        // Comprobar que las fechas no sean futuras
         if (inicio > hoy || fin > hoy) {
             Swal.fire('Error', 'Las fechas no pueden ser futuras al día de hoy.', 'warning');
             return null;
@@ -81,7 +80,7 @@ $(document).ready(function() {
         params.busqueda = $('[name="busqueda"]').val();
     }
 
-     // ¡NUEVA VALIDACIÓN PARA FILTROS NUMÉRICOS!
+     //  VALIDACIÓN PARA FILTROS NUMÉRICOS
     if ($('#filtro_number').is(':visible')) {
         const inicio = $('[name="rango_inicio"]').val();
         const fin = $('[name="rango_fin"]').val();
@@ -111,14 +110,14 @@ $(document).ready(function() {
     return $.param(params); // Siempre devuelve los parámetros si no hubo error
 }
 
-    // --- LÓGICA PARA VISUALIZAR EL REPORTE (CORREGIDA) ---
+    // --- VISUALIZAR EL REPORTE  ---
     $('#btnVisualizarReporte').on('click', function() {
         const btn = $(this);
         parametrosActuales = validarYConstruirParametros();
         if (!parametrosActuales) return;
 
         $.ajax({
-            url: '../reportes/generar_reporte.php', // Asegúrate que esta ruta es correcta
+            url: '../reportes/generar_reporte.php', 
             type: 'GET',
             data: parametrosActuales,
             dataType: 'json',
@@ -163,7 +162,7 @@ $(document).ready(function() {
                         },
                         "responsive": true,
                         "pageLength": 10,
-                        "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'>>" + // Quitamos la 'f' que es el search
+                        "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'>>" + 
                                "<'row'<'col-sm-12'tr>>" +
                                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
                         "order": [[0, 'desc']],
@@ -182,7 +181,7 @@ $(document).ready(function() {
         });
     });
 
-    // --- LÓGICA PARA EXPORTAR ---
+    // --- EXPORTAR ---
     function generarExportacion(formato) {
         let parametrosParaExportar = parametrosActuales;
         if (!parametrosParaExportar) {

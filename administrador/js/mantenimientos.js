@@ -1,7 +1,5 @@
-// --- js/mantenimientos.js (VERSIÓN FINAL CORREGIDA Y ESTRUCTURADA) ---
 $(document).ready(function() {
     
-    // --- REFERENCIAS A ELEMENTOS DEL DOM ---
     const modal = $('#modalMantenimiento'); // Modal unificado
     const form = $('#formMantenimiento');
     const modalLabel = $('#modalMantenimientoLabel');
@@ -39,7 +37,7 @@ $(document).ready(function() {
         calcularTotal();
     };
     
-    // --- LÓGICA DEL BUSCADOR DE TRABAJOS ---
+    // --- BUSCADOR DE TRABAJOS ---
     inputBuscarTrabajo.on('keyup', function() {
         const searchTerm = $(this).val();
         trabajoSeleccionado = null; // Reiniciar selección si se sigue escribiendo
@@ -236,7 +234,7 @@ $(document).ready(function() {
         }
     });
     
-    // --- LÓGICA PARA VER DETALLES ---
+    // --- VER DETALLES ---
     $('#dataTableMantenimientos tbody').on('click', '.btn-ver-detalles', function() {
         
         const id = $(this).data('id');
@@ -267,7 +265,7 @@ $(document).ready(function() {
     });
 
 
-    // --- LÓGICA PARA ELIMINAR ---
+    // ---  ELIMINAR ---
     let idParaEliminar;
     $('#dataTableMantenimientos tbody').on('click', '.btn-eliminar', function() {
         idParaEliminar = $(this).data('id');
