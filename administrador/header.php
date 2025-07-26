@@ -1,4 +1,6 @@
 <?php
+// Al inicio después de session_start()
+define('BASE_URL', '/Taller_motos');
 
 // Definición de constantes para rutas
 if (!defined('BASE_URL')) {
@@ -15,6 +17,7 @@ define('IMG_URL', BASE_URL . '/img');
 define('VENDOR_URL', ADMIN_URL . '/vendor');
 define('CSS_URL', ADMIN_URL . '/css');
 define('JS_URL', ADMIN_URL . '/js');
+define('AJAX_URL', ADMIN_URL . '/ajax/');
 
 // Iniciar sesión y validar la sesión del usuario
 
@@ -28,13 +31,25 @@ $db = new Database();
 $con = $db->conectar();
 
 if (!isset($_SESSION['id_documento']) || !isset($_SESSION['nombre'])) {
-    header('Location: login.php');
+    header('Location: index.php');
     exit();
 }
 
 // Obtiene el nombre del administrador desde la sesión
 $nombre_administrador = isset($_SESSION['nombre']) ? $_SESSION['nombre'] : 'administrador';
 $documento_administrador = isset($_SESSION['id_documento']) ? $_SESSION['id_documento'] : '';
+
+// 3. Obtenemos el nombre del archivo actual (ej. 'clientes.php')
+$pagina_actual = basename($_SERVER['PHP_SELF']);
+
+// Después de la conexión a la base de datos, añade:
+$stmt = $con->prepare("SELECT telefono, email FROM administradores WHERE id_documento = :id");
+$stmt->execute([':id' => $_SESSION['id_documento']]);
+$datos_admin = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Guardar los datos en variables para usarlos en el modal
+$telefono_administrador = $datos_admin['telefono'] ?? '';
+$email_administrador = $datos_admin['email'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -85,21 +100,22 @@ $documento_administrador = isset($_SESSION['id_documento']) ? $_SESSION['id_docu
             </div>
 
             <!-- Elemento de navegación - Dashboard -->
-            <li class="nav-item active">
+            <li class="nav-item <?php echo ($pagina_actual == 'index.php') ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?php echo ADMIN_URL; ?>/index.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
+                    <span>Dashboard</span>
+                </a>
             </li>
 
             <!-- Elemento de navegación - Administradores-->
-            <li class="nav-item">
+            <li class="nav-item <?php echo ($pagina_actual == 'administradores.php') ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?php echo ADMIN_URL; ?>/control/administradores.php">
                     <i class="fas fa-user-shield"></i>
                     <span>Administradores</span></a>
             </li>
             
             <!-- Elemento de navegación - Reporte -->
-            <li class="nav-item">
+            <li class="nav-item <?php echo ($pagina_actual == 'reportes.php') ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?php echo ADMIN_URL; ?>/control/reportes.php">
                     <i class="fas fa-file-alt"></i>
                     <span>Reportes</span></a>
@@ -115,25 +131,25 @@ $documento_administrador = isset($_SESSION['id_documento']) ? $_SESSION['id_docu
 
             <!-- Elemento de navegación - Taller -->
 
-            <li class="nav-item">
+              <li class="nav-item <?php echo ($pagina_actual == 'clientes.php') ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?php echo ADMIN_URL; ?>/taller/clientes.php">
                     <i class="fas fa-users"></i>
                     <span>Clientes</span></a>
             </li>
 
-            <li class="nav-item">
+            <li class="nav-item <?php echo ($pagina_actual == 'motos.php') ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?php echo ADMIN_URL; ?>/taller/motos.php">
                     <i class="fas fa-motorcycle"></i>
                     <span>Motos</span></a>
             </li>
 
-            <li class="nav-item">
+            <li class="nav-item <?php echo ($pagina_actual == 'tipos_trabajos.php') ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?php echo ADMIN_URL; ?>/taller/tipos_trabajos.php">
                     <i class="fas fa-toolbox"></i>
                     <span>Tipos de trabajos</span></a>
             </li>
 
-            <li class="nav-item">
+            <li class="nav-item <?php echo ($pagina_actual == 'mantenimientos.php') ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?php echo ADMIN_URL; ?>/taller/mantenimientos.php">
                     <i class="fas fa-tools"></i>
                     <span>Mantenimientos</span></a>
@@ -147,31 +163,31 @@ $documento_administrador = isset($_SESSION['id_documento']) ? $_SESSION['id_docu
                 Sobre Motos
             </div>
 
-            <li class="nav-item">
+            <li class="nav-item <?php echo ($pagina_actual == 'cilindraje.php') ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?php echo ADMIN_URL; ?>/sobre_motos/cilindraje.php">
                     <i class="fas fa-cogs"></i>
                     <span>Cilindraje</span></a>
             </li>
 
-            <li class="nav-item">
+            <li class="nav-item <?php echo ($pagina_actual == 'marcas.php') ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?php echo ADMIN_URL; ?>/sobre_motos/marcas.php">
                     <i class="fas fa-registered"></i>
                     <span>Marcas</span></a>
             </li>
 
-            <li class="nav-item">
+            <li class="nav-item <?php echo ($pagina_actual == 'referencias_marcas.php') ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?php echo ADMIN_URL; ?>/sobre_motos/referencias_marcas.php">
                     <i class="fas fa-box-open"></i>
                     <span>Referencias</span></a>
             </li>
 
-            <li class="nav-item">
+            <li class="nav-item <?php echo ($pagina_actual == 'modelos.php') ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?php echo ADMIN_URL; ?>/sobre_motos/modelos.php">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Modelos</span></a>
             </li>
 
-            <li class="nav-item">
+            <li class="nav-item <?php echo ($pagina_actual == 'colores.php') ? 'active' : ''; ?>">
                 <a class="nav-link" href="<?php echo ADMIN_URL; ?>/sobre_motos/colores.php">
                     <i class="fas fa-palette"></i>
                     <span>Colores</span></a>

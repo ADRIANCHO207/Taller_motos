@@ -1,4 +1,5 @@
 <?php
+
 include 'C:/xampp/htdocs/Taller_motos/includes/validarsession.php';
 ?>
 
@@ -13,9 +14,7 @@ include 'C:/xampp/htdocs/Taller_motos/includes/validarsession.php';
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Mi Perfil</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
+                    <button type="button" class="close" data-dismiss="modal">×</button>
                 </div>
                 <form id="formPerfilAdmin" novalidate>
                     <div class="modal-body">
@@ -32,29 +31,29 @@ include 'C:/xampp/htdocs/Taller_motos/includes/validarsession.php';
                         <!-- Campos editables -->
                         <div class="form-group">
                             <label for="perfil_telefono">Teléfono</label>
-                            <input type="number" class="form-control" id="perfil_telefono" name="telefono" required>
+                            <input type="number" class="form-control" id="perfil_telefono" name="telefono" value="<?php echo htmlspecialchars($telefono_administrador); ?>" required>
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="form-group">
                             <label for="perfil_email">Email</label>
-                            <input type="email" class="form-control" id="perfil_email" name="email" required>
+                            <input type="email" class="form-control" id="perfil_email" name="email" value="<?php echo htmlspecialchars($email_administrador); ?>" required>
                             <div class="invalid-feedback"></div>
                         </div>
                         <hr>
                         <h6>Cambiar Contraseña (opcional)</h6>
                         <div class="form-group">
                             <label for="perfil_password_actual">Contraseña Actual</label>
-                            <input type="password" class="form-control" id="perfil_password_actual" name="password_actual" placeholder="Ingresa tu contraseña actual para cambiarla" autocomplete="current-password">
+                            <input type="password" class="form-control" id="perfil_password_actual" name="password_actual" placeholder="Ingresa tu contraseña actual para cambiarla">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="form-group">
                             <label for="perfil_password_nueva">Nueva Contraseña</label>
-                            <input type="password" class="form-control" id="perfil_password_nueva" name="password_nueva" autocomplete="new-password">
+                            <input type="password" class="form-control" id="perfil_password_nueva" name="password_nueva">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="form-group">
                             <label for="perfil_confirmar_password">Confirmar Nueva Contraseña</label>
-                            <input type="password" class="form-control" id="perfil_confirmar_password" name="confirmar_password" autocomplete="new-password">
+                            <input type="password" class="form-control" id="perfil_confirmar_password" name="confirmar_password">
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -120,6 +119,12 @@ include 'C:/xampp/htdocs/Taller_motos/includes/validarsession.php';
     ?>
     
 
+    <script>
+        const AJAX_URL = "<?php echo AJAX_URL; ?>";
+        const ADMIN_URL = "<?php echo ADMIN_URL; ?>";
+    </script>
+
+
     <!-- Estos scripts dependen de jQuery, por lo que deben cargarse después -->
     <script src="<?php echo JS_URL; ?>/perfil.js"></script> <!-- Este script ahora funcionará -->
 
@@ -138,7 +143,7 @@ include 'C:/xampp/htdocs/Taller_motos/includes/validarsession.php';
                         timer: 1500,
                         showConfirmButton: false
                     }).then(() => {
-                        window.location.href = '<?php echo BASE_URL; ?>/login.php';
+                        window.location.href = '<?php echo BASE_URL; ?>/index.php.php';
                     });
                 } else {
                     Swal.fire({

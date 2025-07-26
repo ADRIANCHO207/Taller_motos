@@ -19,7 +19,8 @@ include '../header.php';
                         <select id="tipo_reporte" name="tipo" class="form-control">
                             <option value="">-- Seleccione --</option>
                             <optgroup label="Actividad y Finanzas">
-                                <option value="actividad">Reportes de días</option>
+                                <option value="actividad">Reportes de Actividad del sistema</option>
+                                <option value="mantenimiento_de_hoy">Reportes de mantenimientos dia actual</option>
                                 <option value="mantenimientos">Mantenimientos Realizados</option>
                             </optgroup>
                             <optgroup label="Taller">

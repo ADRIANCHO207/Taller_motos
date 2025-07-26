@@ -32,7 +32,7 @@
                     <div id="form-message" style="margin-bottom: 15px;"></div>
 
                     <div class="extra-links">
-                        <a href="login.php">Volver al Login</a>
+                        <a href="index.php">Volver al Login</a>
                     </div>
                 </form>
             </div>

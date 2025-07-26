@@ -10,10 +10,15 @@ if ($conexion->connect_error) {
 $id_admin_actual = $_SESSION['id_documento'] ?? 0;
 
 
+// Se prepara la consulta SQL para obtener todos los administradores EXCEPTO el actual.
+// El '?' es un marcador de posición para la sentencia preparada.
 $sql = "SELECT * FROM administradores WHERE id_documento != ?";
 $stmt = $conexion->prepare($sql);
+// Se vincula la variable $id_admin_actual al marcador '?'. 's' indica que es de tipo string.
 $stmt->bind_param("s", $id_admin_actual);
+// Se ejecuta la consulta.
 $stmt->execute();
+// Se obtiene el conjunto de resultados.
 $resultado = $stmt->get_result();
 ?>
 
@@ -21,7 +26,7 @@ $resultado = $stmt->get_result();
 <div class="container-fluid">
 
     <h1 class="h3 mb-4 text-gray-800">Administradores</h1>
-
+    <!-- Inicio del contenido de la página -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Lista de otros administradores</h6>
@@ -29,6 +34,7 @@ $resultado = $stmt->get_result();
         <div class="card-body">
             <div class="table-responsive">
                 <?php if ($resultado && $resultado->num_rows > 0): ?>
+                    <!-- Si la consulta devolvió al menos una fila, se muestra la tabla -->
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
@@ -41,14 +47,17 @@ $resultado = $stmt->get_result();
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- Se recorre cada fila del resultado de la consulta. -->
                         <?php while($row = $resultado->fetch_assoc()): ?>
                         <tr>
+                             <!-- Se utiliza htmlspecialchars() como medida de seguridad para prevenir ataques XSS -->
                             <td><?php echo htmlspecialchars($row['id_documento']); ?></td>
                             <td><?php echo htmlspecialchars($row['nombre']); ?></td>
                             <td><?php echo htmlspecialchars($row['email']); ?></td>
                             <td><?php echo htmlspecialchars($row['telefono']); ?></td>
                             <td><?php echo htmlspecialchars($row['fecha_creacion']); ?></td>
                             <td>
+                                <!-- Botones de acción. Usan atributos 'data-*' para pasar el ID al JavaScript -->
 
                                 <button type="button" class="btn btn-warning btn-sm btn-editar" data-id="<?php echo $row['id_documento']; ?>">
                                     <i class="fas fa-edit"></i>
@@ -62,18 +71,21 @@ $resultado = $stmt->get_result();
                     </tbody>
                 </table>
                 <?php else: ?>
+                     <!-- Si la consulta no devolvió filas, se muestra un mensaje informativo -->
                     <div class="alert alert-info text-center">
                         No hay otros registros de administradores.
                     </div>
                 <?php endif; ?>
 
                
-                <!-- Botón centrado para agregar administrador -->
+                 <!-- Botón para abrir el modal de "Agregar Nuevo Administrador" -->
                 <div class="text-center mt-4">
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalAgregarAdmin">
                         <i class="fas fa-user-plus"></i> Agregar Nuevo Administrador
                     </button>
                 </div>
+
+                 <!-- === SECCIÓN DE MODALES === -->
 
                 <!-- Modal para agregar administrador -->
                 <div class="modal fade" id="modalAgregarAdmin" tabindex="-1" role="dialog" aria-labelledby="modalAgregarAdminLabel" aria-hidden="true">
@@ -85,8 +97,11 @@ $resultado = $stmt->get_result();
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
+                             <!-- El 'novalidate' previene la validación HTML5 por defecto, para usar la de JS -->
                             <form id="formAgregarAdmin" novalidate>
                                 <div class="modal-body">
+                                     <!-- Campos del formulario. La clase 'invalid-feedback' es de Bootstrap
+                                         y se usa para mostrar los mensajes de error de la validación JS. -->
                                     <div class="form-group">
                                         <label for="documento">Documento</label>
                                         <input type="number" class="form-control" id="documento" name="documento" required>
@@ -118,7 +133,7 @@ $resultado = $stmt->get_result();
                                         <div class="invalid-feedback">Las contraseñas no coinciden.</div>
                                     </div>
                                 </div>
-
+                                <!-- Contenedor para mostrar alertas generales del formulario (éxito/error) -->
                                 <div id="form-alert-container" class="mt-3"></div>
                                 
                                 <div class="modal-footer">
@@ -133,7 +148,7 @@ $resultado = $stmt->get_result();
             </div>
         </div>
     </div>
-
+<!-- Modal para editar administrador -->
 <div class="modal fade" id="modalEditarAdmin" tabindex="-1" role="dialog" aria-labelledby="modalEditarAdminLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -181,6 +196,7 @@ $resultado = $stmt->get_result();
 </div>
 
 
+ <!-- Modal para confirmar la eliminación -->
 <div class="modal fade" id="modalEliminarAdmin" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -201,10 +217,12 @@ $resultado = $stmt->get_result();
 
 <?php
 include '../scripts.php';
+// Incluir el archivo de scripts del footer. Este archivo carga librerías como jQuery, Bootstrap JS, etc.
 
-
+// Se cierra la conexión a la base de datos que se abrió en este archivo.
 $conexion->close();
 ?>
+<!-- Script específico para esta página: inicialización de la librería DataTable -->
 <script>
     $(document).ready(function() {
         $('#dataTable').DataTable({
@@ -234,4 +252,5 @@ $conexion->close();
         });
     });
 </script>
+<!-- Cargar el archivo JavaScript que contiene la lógica para los modales (validación, AJAX, etc.) -->
 <script src="../js/administradores.js"></script>

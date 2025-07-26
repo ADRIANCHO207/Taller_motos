@@ -42,8 +42,11 @@ $(document).ready(function() {
         formPerfil[0].reset();
         formPerfil.find('.is-valid, .is-invalid').removeClass('is-valid is-invalid');
         
-        $.ajax({
-            url: 'ajax/procesar_perfil.php', type: 'GET', data: { accion: 'obtener' }, dataType: 'json',
+         $.ajax({
+            url: '/ajax/procesar_perfil.php', // Concatenamos la ruta base + el archivo
+            type: 'GET', 
+            data: { accion: 'obtener' }, 
+            dataType: 'json',
             success: response => {
                 if (response.status === 'success') {
                     $('#perfil_telefono').val(response.data.telefono);
@@ -109,7 +112,7 @@ $(document).ready(function() {
         if (esTelefonoValido && esEmailValido && esPasswordValido) {
             const formData = $(this).serialize() + '&accion=actualizar';
             $.ajax({
-                url: 'ajax/procesar_perfil.php', type: 'POST', data: formData, dataType: 'json',
+                url: '/Taller_motos/administrador/ajax/procesar_perfil.php', type: 'POST', data: formData, dataType: 'json',
                 success: response => {
                     if (response.status === 'success') {
                         modalPerfil.modal('hide');

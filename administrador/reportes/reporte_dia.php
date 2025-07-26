@@ -1,18 +1,18 @@
 <?php
+// --- administrador/reportes/reporte_dia.php (VERSIÓN REPORTE DE MANTENIMIENTOS) ---
 ob_start();
-
-// Cargar el autoloader de Composer, que maneja PhpSpreadsheet y otras librerías PSR-4
 require_once __DIR__ . '/../../vendor/autoload.php';
-require_once __DIR__ . '/../../vendor/setasign/fpdf/fpdf.php';
 require_once __DIR__ . '/../../conecct/conex.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
+date_default_timezone_set('America/Bogota');
 $db = new Database();
 $conexion = $db->conectar();
 
-// Recibir y validar las fechas
 $fecha_inicio = $_GET['inicio'] ?? '';
 $fecha_fin = $_GET['fin'] ?? '';
 $formato = $_GET['formato'] ?? 'excel';
@@ -22,115 +22,158 @@ if (empty($fecha_inicio) || empty($fecha_fin) || $fecha_inicio > $fecha_fin) {
 }
 
 $fecha_fin_ajustada = date('Y-m-d 23:59:59', strtotime($fecha_fin));
-$titulo_reporte = 'Reporte de Actividad del ' . date('d/m/Y', strtotime($fecha_inicio)) . ' al ' . date('d/m/Y', strtotime($fecha_fin));
+$titulo_reporte = 'Reporte de Mantenimientos del ' . date('d/m/Y', strtotime($fecha_inicio)) . ' al ' . date('d/m/Y', strtotime($fecha_fin));
 
-// Consulta con rango
-$sql = "SELECT a.fecha_hora, a.tabla_afectada, a.accion_realizada, a.descripcion, a.id_admin, adm.nombre as nombre_admin
-        FROM auditoria a
-        LEFT JOIN administradores adm ON a.id_admin = adm.id_documento
-        WHERE a.fecha_hora BETWEEN :inicio AND :fin
-        ORDER BY a.fecha_hora ASC";
+// --- CONSULTA PRINCIPAL: Obtiene todos los detalles de mantenimientos en el rango ---
+$sql = "SELECT 
+            m.id_mantenimientos, m.fecha_realizo, m.kilometraje, m.total, m.observaciones_entrada, m.observaciones_salida,
+            mo.id_placa,
+            c.nombre as nombre_cliente,
+            tt.detalle, tt.cc_inicial, tt.cc_final,
+            dm.cantidad, dm.subtotal
+        FROM mantenimientos m
+        JOIN motos mo ON m.id_placa = mo.id_placa
+        JOIN clientes c ON mo.id_documento_cli = c.id_documento_cli
+        LEFT JOIN detalle_mantenimientos dm ON m.id_mantenimientos = dm.id_mantenimiento
+        LEFT JOIN tipo_trabajo tt ON dm.id_tipo_trabajo = tt.id_tipo
+        WHERE m.fecha_realizo BETWEEN :inicio AND :fin
+        ORDER BY m.id_mantenimientos ASC, tt.detalle ASC";
 $stmt = $conexion->prepare($sql);
 $stmt->execute([':inicio' => $fecha_inicio, ':fin' => $fecha_fin_ajustada]);
-$datos_rango = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-if (empty($datos_rango)) {
-    ob_end_clean(); // Limpiar el búfer antes de mostrar el mensaje
-    echo "<h1>No hay actividad registrada para el rango de fechas seleccionado.</h1><button onclick='window.close();'>Cerrar</button>";
+if (empty($resultados)) {
+    ob_end_clean();
+    echo "<h1>No hay mantenimientos registrados para el rango de fechas seleccionado.</h1><button onclick='window.close();'>Cerrar</button>";
     exit;
 }
 
+// --- Agrupar resultados por mantenimiento ---
+$mantenimientos_agrupados = [];
+foreach ($resultados as $fila) {
+    $id = $fila['id_mantenimientos'];
+    if (!isset($mantenimientos_agrupados[$id])) {
+        $mantenimientos_agrupados[$id] = [
+            'info' => $fila,
+            'detalles' => []
+        ];
+    }
+    if ($fila['detalle']) { // Solo añadir si hay detalles de trabajo
+        $mantenimientos_agrupados[$id]['detalles'][] = $fila;
+    }
+}
+
+// --- Generación del reporte ---
 if ($formato === 'excel') {
     $spreadsheet = new Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
-    $sheet->setTitle('Reporte ' . $fecha_inicio);
-    $sheet->setCellValue('A1', $titulo_reporte);
-    $sheet->mergeCells('A1:E1')->getStyle('A1')->getFont()->setBold(true)->setSize(16);
-    $sheet->setCellValue('A2', 'A continuación, se presentan las actividades registradas en el sistema para el período seleccionado:');
-    $sheet->mergeCells('A2:E2')->getStyle('A2')->getFont()->setSize(12);
+    $sheet->setTitle('Mantenimientos');
     
-    $sheet->setCellValue('A3', 'Fecha y Hora')->getStyle('A3')->getFont()->setBold(true);
-    $sheet->setCellValue('B3', 'Módulo')->getStyle('B3')->getFont()->setBold(true);
-    $sheet->setCellValue('C3', 'Acción')->getStyle('C3')->getFont()->setBold(true);
-    $sheet->setCellValue('D3', 'Descripción')->getStyle('D3')->getFont()->setBold(true);
-    $sheet->setCellValue('E3', 'Realizado Por')->getStyle('E3')->getFont()->setBold(true);
+    $sheet->setCellValue('A1', $titulo_reporte)->mergeCells('A1:F1')->getStyle('A1')->getFont()->setBold(true)->setSize(16);
     
-    $row = 4;
-    foreach ($datos_rango as $dato) {
-        $sheet->setCellValue('A' . $row, date('d/m/Y h:i:s a', strtotime($dato['fecha_hora'])));
-        $sheet->setCellValue('B' . $row, $dato['tabla_afectada']);
-        $sheet->setCellValue('C' . $row, $dato['accion_realizada']);
-        $sheet->setCellValue('D' . $row, $dato['descripcion']);
-        // Si se encontró el nombre del admin, lo usamos. Si no, mostramos el ID que se guardó.
-        $realizado_por = $dato['nombre_admin'] ?? ($dato['id_admin'] ?? 'Desconocido');
-        $sheet->setCellValue('E' . $row, $realizado_por);
+    $row = 3;
+    foreach ($mantenimientos_agrupados as $id => $data) {
+        $info = $data['info'];
+        // Fila principal del mantenimiento
+        $sheet->setCellValue('A'.$row, 'Mantenimiento ID: ' . $id)->mergeCells('A'.$row.':F'.$row)->getStyle('A'.$row)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('4E73DF');
+        $sheet->getStyle('A'.$row)->getFont()->getColor()->setARGB('FFFFFF');
         $row++;
+        
+        $sheet->setCellValue('A'.$row, 'Fecha:')->getStyle('A'.$row)->getFont()->setBold(true);
+        $sheet->setCellValue('B'.$row, date('d/m/Y H:i', strtotime($info['fecha_realizo'])));
+        $sheet->setCellValue('C'.$row, 'Placa:')->getStyle('C'.$row)->getFont()->setBold(true);
+        $sheet->setCellValue('D'.$row, $info['id_placa']);
+        $sheet->setCellValue('E'.$row, 'Cliente:')->getStyle('E'.$row)->getFont()->setBold(true);
+        $sheet->setCellValue('F'.$row, $info['nombre_cliente']);
+        $row++;
+
+        // Fila de detalles de trabajos
+        $sheet->setCellValue('B'.$row, 'Trabajo Realizado')->getStyle('B'.$row)->getFont()->setBold(true);
+        $sheet->setCellValue('C'.$row, 'Rango CC')->getStyle('C'.$row)->getFont()->setBold(true);
+        $sheet->setCellValue('D'.$row, 'Cantidad')->getStyle('D'.$row)->getFont()->setBold(true);
+        $sheet->setCellValue('E'.$row, 'Subtotal')->getStyle('E'.$row)->getFont()->setBold(true);
+        $row++;
+
+        foreach ($data['detalles'] as $detalle) {
+            $sheet->setCellValue('B'.$row, $detalle['detalle']);
+            $sheet->setCellValue('C'.$row, $detalle['cc_inicial'] . '-' . $detalle['cc_final'] . 'cc');
+            $sheet->setCellValue('D'.$row, $detalle['cantidad']);
+            
+            // --- ¡CORRECCIÓN 1! ---
+            // Primero, establecemos el valor en la celda
+            $sheet->setCellValue('E'.$row, $detalle['subtotal']);
+            // Después, aplicamos el formato de número a la celda
+            $sheet->getStyle('E'.$row)->getNumberFormat()->setFormatCode('"$"#,##0.00');
+            $row++;
+        }
+
+        // Fila del Total
+        $sheet->setCellValue('D'.$row, 'Total Mantenimiento:')->getStyle('D'.$row)->getFont()->setBold(true);
+        $sheet->getStyle('D'.$row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        
+        // --- ¡CORRECCIÓN 2! ---
+        // Primero, establecemos el valor y ponemos la fuente en negrita
+        $sheet->setCellValue('E'.$row, $info['total'])->getStyle('E'.$row)->getFont()->setBold(true);
+        // Después, en una línea separada, aplicamos el formato de número
+        $sheet->getStyle('E'.$row)->getNumberFormat()->setFormatCode('"$"#,##0.00');
+        $row += 2; // Espacio entre mantenimientos
     }
 
-    foreach(range('A','E') as $columnID) { $sheet->getColumnDimension($columnID)->setAutoSize(true); }
+    foreach(range('A','F') as $columnID) { $sheet->getColumnDimension($columnID)->setAutoSize(true); }
 
     ob_end_clean();
-
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="reporte_actividad_'.$fecha_inicio.'_a_'.$fecha_fin.'.xlsx"');
-    header('Cache-Control: max-age=0');
-    
+    header('Content-Disposition: attachment;filename="reporte_mantenimientos_'.$fecha_inicio.'_al_'.$fecha_fin.'.xlsx"');
     $writer = new Xlsx($spreadsheet);
     $writer->save('php://output');
     exit;
 
-} else { // pdf
-    ob_end_clean();
-
-    // Ahora PHP ya sabe qué es FPDF gracias al require_once de arriba
-    $pdf = new FPDF('L', 'mm', 'A4');
+} else { // ==========================================================
+         // GENERACIÓN DE REPORTE PDF
+         // ==========================================================
+    $pdf = new FPDF('P', 'mm', 'A4');
     $pdf->AddPage();
-    $pdf->SetFont('Arial', 'B', 16);
+    $pdf->SetFont('Arial', 'B', 14);
     $pdf->Cell(0, 10, utf8_decode($titulo_reporte), 0, 1, 'C');
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 5, 'Generado el ' . date('d/m/Y H:i:s'), 0, 1, 'C');
     $pdf->Ln(5);
 
-    $pdf->SetFont('Arial', '', 12); // Cambiamos a una fuente normal
-    $texto_descriptivo = "A continuación, se presentan las actividades registradas en el sistema para el período seleccionado:";
-    $pdf->MultiCell(0, 5, utf8_decode($texto_descriptivo), 0, 'L');
-    $pdf->Ln(5); // Añadimos un espacio extra antes de la tabla
-    
-    // Encabezados de la tabla
-    $pdf->SetFont('Arial', 'B', 10);
-    $pdf->SetFillColor(230, 230, 230);
-    $pdf->Cell(40, 7, 'Fecha y Hora', 1, 0, 'C', true);
-    $pdf->Cell(30, 7, 'Modulo', 1, 0, 'C', true);
-    $pdf->Cell(35, 7, 'Accion', 1, 0, 'C', true);
-    $pdf->Cell(132, 7, 'Descripcion', 1, 0, 'C', true);
-    $pdf->Cell(40, 7, 'Realizado Por', 1, 1, 'C', true);
-    
-    // Contenido de la tabla
-    $pdf->SetFont('Arial', '', 9);
-    foreach ($datos_rango as $dato) {
-        $realizado_por = $dato['nombre_admin'] ?? ($dato['id_admin'] ?? 'Desconocido');
+    foreach ($mantenimientos_agrupados as $id => $data) {
+        $info = $data['info'];
+        $pdf->SetFillColor(78, 115, 223);
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Cell(0, 8, 'Mantenimiento ID: ' . $id . ' | Placa: ' . $info['id_placa'] . ' | Cliente: ' . utf8_decode($info['nombre_cliente']), 1, 1, 'L', true);
         
-        // Obtener la altura actual de la fila antes de dibujar las celdas
-        $y_inicial = $pdf->GetY();
-        
-        // Dibujar las celdas de ancho fijo
-        $pdf->Cell(40, 7, date('d/m/Y h:i a', strtotime($dato['fecha_hora'])), 1);
-        $pdf->Cell(30, 7, utf8_decode($dato['tabla_afectada']), 1);
-        $pdf->Cell(35, 7, utf8_decode($dato['accion_realizada']), 1);
-        
-        // Guardar la posición para la siguiente celda
-        $x_pos_final = $pdf->GetX() + 132;
-        
-        // Usar MultiCell solo para la descripción, permitiendo que crezca
-        $pdf->MultiCell(132, 7, utf8_decode($dato['descripcion']), 1);
-        
-        // Calcular la altura real que ocupó el MultiCell
-        $altura_fila = $pdf->GetY() - $y_inicial;
-        
-        // Volver a la posición Y inicial y dibujar la celda final con la altura correcta
-        $pdf->SetXY($x_pos_final, $y_inicial);
-        $pdf->Cell(40, $altura_fila, utf8_decode($realizado_por), 1, 1);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->SetFont('Arial', '', 10);
+        $pdf->Cell(0, 6, 'Fecha: ' . date('d/m/Y H:i', strtotime($info['fecha_realizo'])), 'LR', 1);
+
+        // Tabla de detalles
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->Cell(100, 7, 'Trabajo Realizado', 1, 0, 'C');
+        $pdf->Cell(30, 7, 'Rango CC', 1, 0, 'C');
+        $pdf->Cell(20, 7, 'Cantidad', 1, 0, 'C');
+        $pdf->Cell(40, 7, 'Subtotal', 1, 1, 'C');
+
+        $pdf->SetFont('Arial', '', 10);
+        foreach ($data['detalles'] as $detalle) {
+            $pdf->Cell(100, 6, utf8_decode($detalle['detalle']), 1);
+            $pdf->Cell(30, 6, $detalle['cc_inicial'] . '-' . $detalle['cc_final'] . 'cc', 1, 0, 'C');
+            $pdf->Cell(20, 6, $detalle['cantidad'], 1, 0, 'C');
+            $pdf->Cell(40, 6, '$ ' . number_format($detalle['subtotal'], 2, ',', '.'), 1, 1, 'R');
+        }
+
+        // Total
+        $pdf->SetFont('Arial', 'B', 11);
+        $pdf->Cell(150, 8, 'Total Mantenimiento:', 1, 0, 'R');
+        $pdf->Cell(40, 8, '$ ' . number_format($info['total'], 2, ',', '.'), 1, 1, 'R');
+        $pdf->Ln(10); // Espacio entre mantenimientos
     }
-    
-    $pdf->Output('D', 'reporte_actividad_'.$fecha_inicio.'_a_'.$fecha_fin.'.pdf');
+
+    ob_end_clean();
+    $pdf->Output('D', 'reporte_mantenimientos_'.$fecha_inicio.'_al_'.$fecha_fin.'.pdf');
     exit;
 }
 ?>

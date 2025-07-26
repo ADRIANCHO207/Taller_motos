@@ -3,6 +3,14 @@ include '../header.php';
 $conexion = new mysqli('localhost', 'root', '', 'taller_motos');
 if ($conexion->connect_error) { die("Error de conexión: " . $conexion->connect_error); }
 
+$cilindrajes_result = $conexion->query("SELECT cilindraje FROM cilindraje ORDER BY cilindraje ASC");
+$cilindrajes_disponibles = [];
+if ($cilindrajes_result) {
+    while($row = $cilindrajes_result->fetch_assoc()) {
+        $cilindrajes_disponibles[] = $row['cilindraje'];
+    }
+}
+
 // --- filtrado ---
 $filtro_detalle = $_GET['filtro_detalle'] ?? '';
 $filtro_cc_min = $_GET['filtro_cc_min'] ?? '';
@@ -101,14 +109,44 @@ $resultado = $stmt->get_result();
                 <input type="hidden" name="id_tipo" value="0">
                 <input type="hidden" name="accion" value="agregar">
                 <div class="modal-body">
-                    <div class="form-group"><label>Detalle del Trabajo</label><input type="text" class="form-control" name="detalle" required placeholder="Ej: Sincronización Completa"><div class="invalid-feedback"></div></div>
-                    <div class="row">
-                        <div class="col-md-6 form-group"><label>CC Inicial</label><input type="number" class="form-control" name="cc_inicial" required min="50"><div class="invalid-feedback"></div></div>
-                        <div class="col-md-6 form-group"><label>CC Final</label><input type="number" class="form-control" name="cc_final" required min="50"><div class="invalid-feedback"></div></div>
+                    <div class="form-group">
+                        <label>Detalle del Trabajo</label>
+                        <input type="text" class="form-control" name="detalle" required placeholder="Ej: Sincronización Completa">
+                        <div class="invalid-feedback"></div>
                     </div>
-                    <div class="form-group"><label>Precio Unitario</label><input type="number" class="form-control" name="precio_unitario" required step="0.01" min="0"><div class="invalid-feedback"></div></div>
+                    <div class="row">
+                        <!-- ¡CAMBIO! Ahora son menús desplegables (select) -->
+                        <div class="col-md-6 form-group">
+                            <label>CC Inicial</label>
+                            <select class="form-control" name="cc_inicial" required>
+                                <option value="">-- Seleccione --</option>
+                                <?php foreach ($cilindrajes_disponibles as $cc): ?>
+                                    <option value="<?php echo $cc; ?>"><?php echo $cc; ?> cc</option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>CC Final</label>
+                            <select class="form-control" name="cc_final" required>
+                                <option value="">-- Seleccione --</option>
+                                <?php foreach ($cilindrajes_disponibles as $cc): ?>
+                                    <option value="<?php echo $cc; ?>"><?php echo $cc; ?> cc</option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Precio Unitario</label>
+                        <input type="number" class="form-control" name="precio_unitario" required step="0.01" min="0">
+                        <div class="invalid-feedback"></div>
+                    </div>
                 </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
             </form>
         </div>
     </div>

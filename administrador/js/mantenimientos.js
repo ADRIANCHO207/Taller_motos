@@ -1,21 +1,29 @@
 $(document).ready(function() {
-    
-    const modal = $('#modalMantenimiento'); // Modal unificado
+
+    // ==========================================================
+    // SECCIÓN 1: REFERENCIAS Y ESTADO GLOBAL
+    // ==========================================================
+    const modal = $('#modalMantenimiento');
     const form = $('#formMantenimiento');
     const modalLabel = $('#modalMantenimientoLabel');
     const tablaDetalles = $('#tablaDetallesAgregados');
     const textoTotal = $('#textoTotal');
+    const inputBuscarMoto = $('#inputBuscarMoto');
+    const resultadosBusquedaMoto = $('#resultadosBusquedaMoto');
     const inputBuscarTrabajo = $('#inputBuscarTrabajo');
+    const resultadosBusquedaTrabajo = $('#resultadosBusqueda');
     const btnAnadirTrabajo = $('#btnAnadirTrabajo');
-    const resultadosBusqueda = $('#resultadosBusqueda');
-    const fechaRealizoInput = form.find('[name="fecha_realizo"]');
-    const kilometrajeInput = form.find('[name="kilometraje"]');
+    
 
     let detallesAgregados = [];
     let trabajoSeleccionado = null;
+    let motoSeleccionada = null; // Guardará { placa: 'ABC12D', cilindraje: 150 }
 
-    // --- FUNCIONES REUTILIZABLES ---
-    const calcularTotal = () => {
+    // ==========================================================
+    // SECCIÓN 2: FUNCIONES REUTILIZABLES (VALIDACIÓN Y RENDERIZADO)
+    // ==========================================================
+    
+     const calcularTotal = () => {
         const total = detallesAgregados.reduce((sum, item) => sum + item.subtotal, 0);
         textoTotal.text(`$ ${total.toLocaleString('es-CO', {minimumFractionDigits: 2})}`);
         form.find('[name="total"]').val(total);
@@ -36,107 +44,6 @@ $(document).ready(function() {
         });
         calcularTotal();
     };
-    
-    // --- BUSCADOR DE TRABAJOS ---
-    inputBuscarTrabajo.on('keyup', function() {
-        const searchTerm = $(this).val();
-        trabajoSeleccionado = null; // Reiniciar selección si se sigue escribiendo
-        btnAnadirTrabajo.prop('disabled', true);
-        if (searchTerm.length < 2) {
-            resultadosBusqueda.empty().hide();
-            return;
-        }
-        $.ajax({
-            url: '../ajax/procesar_mantenimiento.php', type: 'GET', data: { accion: 'buscar_trabajos', term: searchTerm }, dataType: 'json',
-            success: data => {
-                resultadosBusqueda.empty().show();
-                data.forEach(trabajo => {
-                    resultadosBusqueda.append(`<a href="#" class="list-group-item list-group-item-action resultado-trabajo" data-id="${trabajo.id_tipo}" data-precio="${trabajo.precio_unitario}" data-detalle="${trabajo.detalle}">${trabajo.detalle}</a>`);
-                });
-            }
-        });
-    });
-
-    $(document).on('click', '.resultado-trabajo', function(e) {
-        e.preventDefault();
-        trabajoSeleccionado = {
-            id: $(this).data('id'),
-            precio: $(this).data('precio'),
-            detalle: $(this).data('detalle')
-        };
-        inputBuscarTrabajo.val($(this).data('detalle'));
-        btnAnadirTrabajo.prop('disabled', false);
-        resultadosBusqueda.hide();
-    });
-
-    btnAnadirTrabajo.on('click', function() {
-        if (!trabajoSeleccionado) return;
-        const cantidad = parseInt($('#inputCantidad').val());
-
-        if (isNaN(cantidad) || cantidad < 1) {
-            Swal.fire('Error', 'La cantidad debe ser un número válido mayor a cero.', 'warning');
-            return;
-        }
-
-        detallesAgregados.push({
-            id_tipo: trabajoSeleccionado.id,
-            detalle: trabajoSeleccionado.detalle,
-            cantidad: cantidad,
-            precio_unitario: trabajoSeleccionado.precio,
-            subtotal: trabajoSeleccionado.precio * cantidad
-        });
-
-        renderizarTablaDetalles();
-        trabajoSeleccionado = null;
-        inputBuscarTrabajo.val('');
-        $('#inputCantidad').val(1);
-        $(this).prop('disabled', true);
-    });
-
-    tablaDetalles.on('click', '.btn-quitar-detalle', function() {
-        detallesAgregados.splice($(this).data('index'), 1);
-        renderizarTablaDetalles();
-    });
-
-    // --- LÓGICA PARA ABRIR MODALES (AGREGAR Y EDITAR) ---
-    $('[data-target="#modalAgregarMantenimiento"]').on('click', function() {
-        form[0].reset();
-        detallesAgregados = [];
-        renderizarTablaDetalles();
-        modalLabel.text('Registrar Nuevo Mantenimiento');
-        form.find('[name="accion"]').val('agregar');
-        form.find('[name="id_mantenimientos"]').val('0');
-        form.find('[name="id_placa"]').prop('disabled', false); // La placa se puede seleccionar
-        modal.modal('show');
-    });
-
-    $('#dataTableMantenimientos tbody').on('click', '.btn-editar', function() {
-        const id = $(this).data('id');
-        $.ajax({
-            url: '../ajax/procesar_mantenimiento.php', type: 'GET', data: { accion: 'obtener_mantenimiento', id: id }, dataType: 'json',
-            success: data => {
-                form[0].reset();
-                modalLabel.text('Editar Mantenimiento #' + data.main.id_mantenimientos);
-                form.find('[name="accion"]').val('actualizar');
-                form.find('[name="id_mantenimientos"]').val(data.main.id_mantenimientos);
-
-                form.find('[name="id_placa"]').val(data.main.id_placa).prop('disabled', true); // Placa no se puede cambiar
-                form.find('[name="fecha_realizo"]').val(data.main.fecha_realizo.replace(' ', 'T'));
-                form.find('[name="kilometraje"]').val(data.main.kilometraje);
-                form.find('[name="observaciones_entrada"]').val(data.main.observaciones_entrada);
-                form.find('[name="observaciones_salida"]').val(data.main.observaciones_salida);
-                
-                detallesAgregados = data.details.map(d => ({
-                    id_tipo: d.id_tipo, detalle: d.detalle, cantidad: d.cantidad,
-                    precio_unitario: parseFloat(d.precio_unitario),
-                    subtotal: d.cantidad * parseFloat(d.precio_unitario)
-                }));
-                renderizarTablaDetalles();
-                
-                modal.modal('show');
-            }
-        });
-    });
 
     const validarFechaNoFutura = (input) => {
         const feedback = input.next('.invalid-feedback');
@@ -182,59 +89,263 @@ $(document).ready(function() {
         input.removeClass('is-invalid').addClass('is-valid');
         return true;
     };
+    
+    const validarMotoSeleccionada = () => {
+        const inputGroup = inputBuscarMoto.closest('.form-group');
+        if (motoSeleccionada && form.find('[name="id_placa"]').val()) {
+            inputBuscarMoto.removeClass('is-invalid').addClass('is-valid');
+            inputGroup.find('.invalid-feedback').text('');
+            return true;
+        }
+        inputBuscarMoto.removeClass('is-valid').addClass('is-invalid');
+        inputGroup.find('.invalid-feedback').text('Debe seleccionar una moto de la lista.');
+        return false;
+    };
 
-    // --- FUNCIÓN PARA VALIDAR SELECTS OBLIGATORIOS ---
-    const validarSelect = (select) => {
-        if (!select.val()) {
-            select.addClass('is-invalid').next('.invalid-feedback').text('Debe seleccionar una opción.');
+    const validarCampo = (input, validador) => {
+        const feedback = input.next('.invalid-feedback');
+        const valor = input.val().trim();
+        
+        if (!valor) {
+            input.removeClass('is-valid').addClass('is-invalid');
+            feedback.text('Este campo es obligatorio');
             return false;
         }
-        select.removeClass('is-invalid').addClass('is-valid');
+        
+        const resultado = validador(valor);
+        if (resultado === true) {
+            input.removeClass('is-invalid').addClass('is-valid');
+            feedback.text('');
+            return true;
+        } else {
+            input.removeClass('is-valid').addClass('is-invalid');
+            feedback.text(resultado);
+            return false;
+        }
+    };
+
+    const validarObservaciones = (valor) => {
+        if (valor.length > 500) {
+            return 'Las observaciones no pueden exceder los 500 caracteres';
+        }
         return true;
     };
 
+    // ==========================================================
+    // SECCIÓN 3: LÓGICA DE LOS BUSCADORES Y DETALLES
+    // ==========================================================
 
-    // --- Asignar validaciones en tiempo real ---
-    fechaRealizoInput.on('input', () => validarFechaNoFutura(fechaRealizoInput));
-    kilometrajeInput.on('input', () => validarKilometraje(kilometrajeInput));
-    form.find('[name="id_placa"]').on('change', (e) => validarSelect($(e.target)));
+    // --- Buscador de Motos ---
+    inputBuscarMoto.on('keyup', function() {
+        motoSeleccionada = null;
+        form.find('[name="id_placa"]').val('');
+        detallesAgregados = [];
+        renderizarTablaDetalles();
+        inputBuscarTrabajo.val('');
+        inputBuscarMoto.removeClass('is-valid is-invalid');
 
-    // --- ENVÍO DEL FORMULARIO (AGREGAR Y EDITAR) MEJORADO ---
+        const searchTerm = $(this).val();
+        if (searchTerm.length < 2) {
+            resultadosBusquedaMoto.empty().hide();
+            return;
+        }
+        $.ajax({
+            url: '../ajax/procesar_mantenimiento.php',
+            type: 'GET',
+            data: { accion: 'buscar_motos', term: searchTerm },
+            dataType: 'json',
+            success: data => {
+                resultadosBusquedaMoto.empty().show();
+                data.forEach(moto => {
+                    const texto = `${moto.id_placa} - ${moto.nombre}`;
+                    resultadosBusquedaMoto.append(`<a href="#" class="list-group-item list-group-item-action resultado-moto" 
+                        data-placa="${moto.id_placa}" data-cilindraje="${moto.cilindraje}" data-texto="${texto}">
+                        ${texto}
+                    </a>`);
+                });
+            }
+        });
+    });
+
+    // Evento al seleccionar una moto de la lista
+    $(document).on('click', '.resultado-moto', function(e) {
+        e.preventDefault();
+        motoSeleccionada = { placa: $(this).data('placa'), cilindraje: $(this).data('cilindraje') };
+        inputBuscarMoto.val($(this).data('texto'));
+        form.find('[name="id_placa"]').val(motoSeleccionada.placa);
+        resultadosBusquedaMoto.hide();
+        validarMotoSeleccionada(); // Validar inmediatamente
+    });
+    
+    // --- Buscador de Trabajos (con validación de CC) ---
+    inputBuscarTrabajo.on('keyup', function() {
+        if (!motoSeleccionada) {
+            Swal.fire('Atención', 'Primero debes seleccionar una moto.', 'warning');
+            $(this).val('');
+            return;
+        }
+        const searchTerm = $(this).val();
+        trabajoSeleccionado = null;
+        btnAnadirTrabajo.prop('disabled', true);
+        if (searchTerm.length < 2) {
+            resultadosBusquedaTrabajo.empty().hide();
+            return;
+        }
+        $.ajax({
+            url: '../ajax/procesar_mantenimiento.php',
+            type: 'GET',
+            data: { 
+                accion: 'buscar_trabajos', 
+                term: searchTerm,
+                cilindraje: motoSeleccionada.cilindraje // ¡Enviamos el CC!
+            },
+            dataType: 'json',
+            success: data => {
+                resultadosBusquedaTrabajo.empty().show();
+                if (data.length > 0) {
+                    data.forEach(trabajo => {
+                        resultadosBusquedaTrabajo.append(`<a href="#" class="list-group-item list-group-item-action resultado-trabajo" data-id="${trabajo.id_tipo}" data-precio="${trabajo.precio_unitario}" data-detalle="${trabajo.detalle}">${trabajo.detalle}</a>`);
+                    });
+                } else {
+                     resultadosBusquedaTrabajo.html('<div class="list-group-item text-muted">No se encontraron trabajos para este cilindraje.</div>');
+                }
+            }
+        });
+    });
+
+    // Evento al seleccionar un trabajo de la lista
+   $(document).on('click', '.resultado-trabajo', function(e) {
+        e.preventDefault();
+        trabajoSeleccionado = {
+            id: $(this).data('id'),
+            precio: $(this).data('precio'),
+            detalle: $(this).data('detalle')
+        };
+       inputBuscarTrabajo.val($(this).data('detalle'));
+        btnAnadirTrabajo.prop('disabled', false);
+        resultadosBusquedaTrabajo.empty().hide(); // Ocultamos y vaciamos la lista
+    });
+
+
+    btnAnadirTrabajo.on('click', function() {
+        if (!trabajoSeleccionado) return;
+        const cantidad = parseInt($('#inputCantidad').val());
+        if (isNaN(cantidad) || cantidad < 1) {
+            Swal.fire('Error', 'La cantidad debe ser un número válido mayor a cero.', 'warning');
+            return;
+        }
+
+        detallesAgregados.push({
+            id_tipo: trabajoSeleccionado.id,
+            detalle: trabajoSeleccionado.detalle,
+            cantidad: cantidad,
+            precio_unitario: trabajoSeleccionado.precio,
+            subtotal: trabajoSeleccionado.precio * cantidad
+        });
+
+        renderizarTablaDetalles();
+        trabajoSeleccionado = null;
+        inputBuscarTrabajo.val(''); // Limpiamos el input de búsqueda
+        $('#inputCantidad').val(1);
+        $(this).prop('disabled', true); // Deshabilitamos el botón de añadir
+    });
+
+    tablaDetalles.on('click', '.btn-quitar-detalle', function() {
+        detallesAgregados.splice($(this).data('index'), 1);
+        renderizarTablaDetalles();
+    });
+
+
+    // ==========================================================
+    // SECCIÓN 4: MANEJO DE MODALES (ABRIR, ENVIAR)
+    // ==========================================================
+
+    // --- Abrir modal para AGREGAR ---
+   $('[data-target="#modalAgregarMantenimiento"]').on('click', function() {
+        form[0].reset();
+        form.find('.is-valid, .is-invalid').removeClass('is-valid is-invalid');
+        detallesAgregados = [];
+        renderizarTablaDetalles();
+        motoSeleccionada = null;
+        modalLabel.text('Registrar Nuevo Mantenimiento');
+        form.find('[name="accion"]').val('agregar');
+        form.find('[name="id_mantenimientos"]').val('0');
+        inputBuscarMoto.prop('disabled', false); // El buscador de moto está HABILITADO
+        modal.modal('show');
+    });
+
+    // --- Abrir modal para EDITAR ---
+    $('#dataTableMantenimientos tbody').on('click', '.btn-editar', function() {
+        const id = $(this).data('id');
+        $.ajax({
+            url: '../ajax/procesar_mantenimiento.php', type: 'GET', data: { accion: 'obtener_mantenimiento', id: id }, dataType: 'json',
+            success: data => {
+                if(data && data.main) {
+                    form[0].reset();
+                    form.find('.is-valid, .is-invalid').removeClass('is-valid is-invalid');
+                    
+                    modalLabel.text('Editar Mantenimiento #' + data.main.id_mantenimientos);
+                    form.find('[name="accion"]').val('actualizar');
+                    form.find('[name="id_mantenimientos"]').val(data.main.id_mantenimientos);
+
+                    // --- ¡LÓGICA MEJORADA PARA MODO EDICIÓN! ---
+                    const textoMoto = `${data.main.id_placa} - ${data.main.nombre_cliente}`;
+                    motoSeleccionada = { placa: data.main.id_placa, cilindraje: data.main.cilindraje };
+                    
+                    // Llenamos el input de búsqueda y lo deshabilitamos
+                    inputBuscarMoto.val(textoMoto).prop('disabled', true); 
+                    // Llenamos el campo oculto con la placa
+                    form.find('[name="id_placa"]').val(data.main.id_placa);
+                    form.find('[name="fecha_realizo"]').val(data.main.fecha_realizo.replace(' ', 'T'));
+                    form.find('[name="kilometraje"]').val(data.main.kilometraje);
+                    form.find('[name="observaciones_entrada"]').val(data.main.observaciones_entrada);
+                    form.find('[name="observaciones_salida"]').val(data.main.observaciones_salida);
+               
+                    detallesAgregados = data.details.map(d => ({
+                        id_tipo: d.id_tipo, detalle: d.detalle, cantidad: d.cantidad,
+                        precio_unitario: parseFloat(d.precio_unitario),
+                        subtotal: d.cantidad * parseFloat(d.precio_unitario)
+                    }));
+                    renderizarTablaDetalles();
+                
+                    modal.modal('show');
+                }
+            }
+        });
+    });
+
+    // --- ENVÍO DEL FORMULARIO (Agregar y Editar) ---
     form.on('submit', function(e) {
         e.preventDefault();
 
-        // Ejecutar todas las validaciones
-        const esPlacaValida = validarSelect(form.find('[name="id_placa"]'));
-        const esFechaValida = validarFechaNoFutura(fechaRealizoInput);
-        const esKmValido = validarKilometraje(kilometrajeInput);
+        const esMotoValida = validarMotoSeleccionada();
+        const esFechaValida = validarFechaNoFutura(form.find('[name="fecha_realizo"]'));
+        const esKmValido = validarKilometraje(form.find('[name="kilometraje"]'));
         
-        // Verificar si hay trabajos agregados
         const hayDetalles = detallesAgregados.length > 0;
-        if (!hayDetalles) {
-             Swal.fire('Error', 'Debe añadir al menos un trabajo realizado.', 'warning');
-        }
+        if (!hayDetalles) Swal.fire('Error', 'Debe añadir al menos un trabajo realizado.', 'warning');
 
-        // Si todo es válido, proceder con AJAX
-        if (esPlacaValida && esFechaValida && esKmValido && hayDetalles) {
+        if (esMotoValida && esFechaValida && esKmValido && hayDetalles) {
             const formData = new FormData(this);
             formData.append('detalles', JSON.stringify(detallesAgregados));
-            if (form.find('[name="id_placa"]').is(':disabled')) {
-                formData.append('id_placa', form.find('[name="id_placa"]').val());
+            
+            if (inputBuscarMoto.is(':disabled')) {
+                formData.set('id_placa', motoSeleccionada.placa);
             }
 
             $.ajax({
                 url: '../ajax/procesar_mantenimiento.php', type: 'POST', data: formData, processData: false, contentType: false, dataType: 'json',
                 success: response => {
                     modal.modal('hide');
-                    Swal.fire(response.status === 'success' ? '¡Éxito!' : 'Error', response.message, response.status).then(() => {
-                        if(response.status === 'success') location.reload();
-                    });
+                    Swal.fire(response.status === 'success' ? '¡Éxito!' : 'Error', response.message, response.status)
+                    .then(() => { if(response.status === 'success') location.reload(); });
                 }
             });
         }
     });
     
-    // --- VER DETALLES ---
+    // --- VER DETALLES Y ELIMINAR ---
+
     $('#dataTableMantenimientos tbody').on('click', '.btn-ver-detalles', function() {
         
         const id = $(this).data('id');
@@ -265,7 +376,6 @@ $(document).ready(function() {
     });
 
 
-    // ---  ELIMINAR ---
     let idParaEliminar;
     $('#dataTableMantenimientos tbody').on('click', '.btn-eliminar', function() {
         idParaEliminar = $(this).data('id');
@@ -284,8 +394,7 @@ $(document).ready(function() {
         });
     });
 
-    // --- VALIDACIONES DE FECHAS EN EL FILTRO ---
-    
+    // --- VALIDACIONES DE FILTROS ---
     const formFiltros = $('#formFiltros');
     const fechaInicioInput = formFiltros.find('[name="filtro_inicio"]');
     const fechaFinInput = formFiltros.find('[name="filtro_fin"]');
@@ -327,6 +436,183 @@ $(document).ready(function() {
                 title: 'Rango incorrecto',
                 text: 'La "Fecha Fin" no puede ser anterior a la "Fecha Inicio".'
             });
+        }
+    });
+});
+
+// Validación en tiempo real para la fecha
+$(document).ready(function() {
+    form.find('[name="fecha_realizo"]').on('input change', function() {
+        validarFechaNoFutura($(this));
+    });
+
+    // Validación en tiempo real para kilometraje
+    form.find('[name="kilometraje"]').on('input', function() {
+        validarKilometraje($(this));
+    });
+
+    // Validación en tiempo real para moto seleccionada
+    inputBuscarMoto.on('input change', function() {
+        validarMotoSeleccionada();
+    });
+
+    // Validación en tiempo real para observaciones de entrada
+    form.find('[name="observaciones_entrada"]').on('input', function() {
+        validarCampo($(this), validarObservaciones);
+    });
+
+    // Validación en tiempo real para observaciones de salida
+    form.find('[name="observaciones_salida"]').on('input', function() {
+        validarCampo($(this), validarObservaciones);
+    });
+
+    // Validación en tiempo real para cantidad de trabajos
+    $('#inputCantidad').on('input', function() {
+        const valor = parseInt($(this).val());
+        const feedback = $(this).next('.invalid-feedback');
+        
+        if (isNaN(valor) || valor < 1) {
+            $(this).removeClass('is-valid').addClass('is-invalid');
+            feedback.text('La cantidad debe ser mayor a 0');
+            btnAnadirTrabajo.prop('disabled', true);
+        } else {
+            $(this).removeClass('is-invalid').addClass('is-valid');
+            feedback.text('');
+            if (trabajoSeleccionado) {
+                btnAnadirTrabajo.prop('disabled', false);
+            }
+        }
+    });
+
+    // Modificar el evento submit para validar antes de enviar
+    form.on('submit', function(e) {
+        e.preventDefault();
+        
+        // Validar todos los campos
+        const validaciones = {
+            moto: validarMotoSeleccionada(),
+            fecha: validarFechaNoFutura(form.find('[name="fecha_realizo"]')),
+            kilometraje: validarKilometraje(form.find('[name="kilometraje"]')),
+            obsEntrada: validarCampo(form.find('[name="observaciones_entrada"]'), validarObservaciones),
+            obsSalida: validarCampo(form.find('[name="observaciones_salida"]'), validarObservaciones)
+        };
+
+        // Verificar si hay trabajos agregados
+        const hayDetalles = detallesAgregados.length > 0;
+        if (!hayDetalles) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Faltan trabajos',
+                text: 'Debe añadir al menos un trabajo realizado.'
+            });
+            return;
+        }
+
+        // Verificar todas las validaciones
+        const todosValidos = Object.values(validaciones).every(v => v === true);
+        
+        if (!todosValidos) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Formulario incompleto',
+                text: 'Por favor, revise los campos marcados en rojo.'
+            });
+            return;
+        }
+
+        // Si todo está válido, proceder con el envío
+        const formData = new FormData(this);
+        formData.append('detalles', JSON.stringify(detallesAgregados));
+        
+        if (inputBuscarMoto.is(':disabled')) {
+            formData.set('id_placa', motoSeleccionada.placa);
+        }
+
+        // Envío del formulario
+        $.ajax({
+            url: '../ajax/procesar_mantenimiento.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: response => {
+                modal.modal('hide');
+                Swal.fire({
+                    icon: response.status === 'success' ? 'success' : 'error',
+                    title: response.status === 'success' ? '¡Éxito!' : 'Error',
+                    text: response.message
+                }).then(() => {
+                    if(response.status === 'success') location.reload();
+                });
+            },
+            error: () => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Hubo un problema al procesar la solicitud.'
+                });
+            }
+        });
+    });
+
+    // Validaciones en tiempo real
+    const setupValidacionesEnTiempoReal = () => {
+        // Validación de fecha
+        form.find('[name="fecha_realizo"]').on('input blur', function() {
+            validarFechaNoFutura($(this));
+        });
+
+        // Validación de kilometraje
+        form.find('[name="kilometraje"]').on('input blur', function() {
+            validarKilometraje($(this));
+        });
+
+        // Validación de moto
+        inputBuscarMoto.on('input blur', function() {
+            validarMotoSeleccionada();
+        });
+
+        // Validación de observaciones entrada
+        form.find('[name="observaciones_entrada"]').on('input blur', function() {
+            validarCampo($(this), validarObservaciones);
+        });
+
+        // Validación de observaciones salida
+        form.find('[name="observaciones_salida"]').on('input blur', function() {
+            validarCampo($(this), validarObservaciones);
+        });
+
+        // Validación de cantidad
+        $('#inputCantidad').on('input blur', function() {
+            const valor = parseInt($(this).val());
+            const feedback = $(this).next('.invalid-feedback');
+            
+            if (isNaN(valor) || valor < 1) {
+                $(this).removeClass('is-valid').addClass('is-invalid');
+                feedback.text('La cantidad debe ser mayor a 0');
+                btnAnadirTrabajo.prop('disabled', true);
+            } else {
+                $(this).removeClass('is-invalid').addClass('is-valid');
+                feedback.text('');
+                if (trabajoSeleccionado) {
+                    btnAnadirTrabajo.prop('disabled', false);
+                }
+            }
+        });
+    };
+
+    // Inicializar validaciones cuando se abre el modal
+    modal.on('shown.bs.modal', function() {
+        setupValidacionesEnTiempoReal();
+        
+        // Validar campos si es edición
+        if (form.find('[name="accion"]').val() === 'actualizar') {
+            validarFechaNoFutura(form.find('[name="fecha_realizo"]'));
+            validarKilometraje(form.find('[name="kilometraje"]'));
+            validarMotoSeleccionada();
+            validarCampo(form.find('[name="observaciones_entrada"]'), validarObservaciones);
+            validarCampo(form.find('[name="observaciones_salida"]'), validarObservaciones);
         }
     });
 });

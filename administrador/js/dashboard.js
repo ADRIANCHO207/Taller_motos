@@ -1,8 +1,8 @@
 $(document).ready(function() {
     
-    // Función para formatear a moneda colombiana
     const formatCurrency = (number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(number || 0);
-
+    let dataTableMantenimientosDia;
+    
     // Variables para guardar las instancias de las gráficas y la tabla
     let areaChartInstance;
     let pieChartInstance;
@@ -82,56 +82,57 @@ $(document).ready(function() {
                     $('#ganancias-mes').text(formatCurrency(data.ganancias_mes));
                     $('#ganancias-anio').text(formatCurrency(data.ganancias_anio));
                     $('#mantenimientos-mes').text(data.mantenimientos_mes);
-                    $('#clientes-mes').text(data.clientes_mes); 
-                    $('#motos-mes').text(data.motos_mes);       
+                    $('#clientes-mes').text(data.clientes_mes);
+                    $('#motos-mes').text(data.motos_mes);
 
-                    // Llenar tabla de auditoría y LUEGO inicializar DataTable
-                    const tablaAuditoriaBody = $('#tablaAuditoria tbody');
-                    tablaAuditoriaBody.empty();
-                    data.auditoria.forEach(item => {
-                        const fecha = new Date(item.fecha_hora).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' });
-                        tablaAuditoriaBody.append(`<tr><td>${fecha}</td><td>${item.tabla_afectada}</td><td>${item.accion_realizada}</td><td>${item.descripcion}</td><td>${item.id_admin} - ${item.nombre}</td></tr>`);
-                    });
+                    // Llenar tabla de mantenimientos del día
+                    const tablaBody = $('#tablaMantenimientosDia tbody');
+                    const totalDiaElement = $('#totalMantenimientosDia');
+                    tablaBody.empty();
+                    
+                    let totalDelDia = 0; // Variable para sumar el total
 
-                    if ($.fn.DataTable.isDataTable('#tablaAuditoria')) {
-                        $('#tablaAuditoria').DataTable().destroy();
+                    if (data.mantenimientos_dia && data.mantenimientos_dia.length > 0) {
+                        data.mantenimientos_dia.forEach(item => {
+                            const hora = new Date(item.fecha_realizo).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+                            const fila = `
+                                <tr>
+                                    <td>${hora}</td>
+                                    <td>${item.id_placa}</td>
+                                    <td>${item.cliente}</td>
+                                    <td>${item.detalles_trabajos || 'N/A'}</td>
+                                    <td class="text-right">${formatCurrency(item.total)}</td>
+                                </tr>`;
+                            tablaBody.append(fila);
+                            totalDelDia += parseFloat(item.total); // Sumar al total del día
+                        });
                     }
-                    dataTableAuditoria = $('#tablaAuditoria').DataTable({
+
+                    // Mostrar el total del día en el pie de la tabla
+                    totalDiaElement.text(formatCurrency(totalDelDia));
+
+                    // Inicializar DataTable
+                    if ($.fn.DataTable.isDataTable('#tablaMantenimientosDia')) {
+                        $('#tablaMantenimientosDia').DataTable().destroy();
+                    }
+                    dataTableMantenimientosDia = $('#tablaMantenimientosDia').DataTable({
                         "language": {
-                        "sProcessing":     "Procesando...",
-                        "sLengthMenu":     "Mostrar _MENU_ registros",
-                        "sZeroRecords":    "No se encontraron resultados",
-                        "sEmptyTable":     "No hay movimientos registrados",
-                        "sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-                        "sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 registros",
-                        "sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
-                        "sInfoPostFix":    "",
-                        "sSearch":         "Buscar:",
-                        "sUrl":           "",
-                        "sInfoThousands":  ",",
-                        "sLoadingRecords": "Cargando...",
-                        "oPaginate": {
-                            "sFirst":    "Primero",
-                            "sLast":     "Último",
-                            "sNext":     "Siguiente",
-                            "sPrevious": "Anterior"
+                            "sEmptyTable": "No hay mantenimientos registrados hoy",
+                            "sProcessing": "Procesando...",
+                            "sLengthMenu": "Mostrar _MENU_ registros",
+                            "sZeroRecords": "No se encontraron resultados",
+                            "sEmptyTable": "No hay mantenimientos registrados para hoy",
+                            "sInfo": "Mostrando _START_ al _END_ de _TOTAL_ registros",
+                            "sInfoFiltered": "(filtrado de _MAX_ registros totales)",
+                            "sSearch": "Buscar:",
+                            "oPaginate": {
+                                "sFirst": "Primero", "sLast": "Último",
+                                "sNext": "Siguiente", "sPrevious": "Anterior"
+                            }
                         },
-                        "oAria": {
-                            "sSortAscending":  ": Activar para ordenar la columna de manera ascendente",
-                            "sSortDescending": ": Activar para ordenar la columna de manera descendente"
-                        }
-                    },
-                    "pageLength": 5, // Mostrar 5 registros por página
-                    "order": [[0, 'desc']], // Ordenar por fecha descendente
-                    "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                        "<'row'<'col-sm-12'tr>>" +
-                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-                    "responsive": true,
-                    "autoWidth": false,
-                    "initComplete": function(settings, json) {
-                        $('.dataTables_filter input').attr('placeholder', 'Buscar movimiento...');
-                    }
-                                    
+                        "pageLength": 5,
+                        "order": [[1, 'desc']], // Ordenar por hora descendente
+                        "responsive": true
                     });
 
                     // Inicializar gráficas
@@ -139,10 +140,14 @@ $(document).ready(function() {
                     initPieChart(data.grafica_pie);
                 }
             },
-            error: () => console.error("No se pudieron cargar los datos del dashboard.")
+            error: (jqXHR, textStatus, errorThrown) => {
+                // Mensaje de error más detallado
+                console.error("No se pudieron cargar los datos del dashboard. Estado:", textStatus, "Error:", errorThrown);
+                // También podemos ver la respuesta del servidor si no es un JSON válido
+                console.log("Respuesta del servidor:", jqXHR.responseText);
+            }
         });
     }
-
     const modalReporte = $('#modalReporte');
     const reporteFechaInicioInput = $('#reporte_fecha_inicio');
     const reporteFechaFinInput = $('#reporte_fecha_fin');
@@ -193,4 +198,4 @@ $(document).ready(function() {
 
     // Cargar los datos al iniciar la página
     cargarDatosDashboard();
-});
+}); 

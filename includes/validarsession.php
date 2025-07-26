@@ -28,7 +28,7 @@ if (!isset($_SESSION['id_documento'])) {
     // Muestra una alerta JavaScript informando que debe ingresar credenciales
     echo "<script>alert('INGRESE CREDENCIALES DE LOGIN');</script>";
     // Redirige automáticamente al usuario a la página de login usando JavaScript
-    echo "<script>window.location = '" . BASE_URL . "/login.php';</script>";
+    echo "<script>window.location = '" . BASE_URL . "/index.php';</script>";
     // Termina la ejecución del script para evitar que continúe procesando
     exit();
 }

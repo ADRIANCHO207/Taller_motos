@@ -81,27 +81,26 @@ $resultado = $stmt->get_result();
 
 <!-- === MODALES === -->
 <!-- Modal para Agregar Mantenimiento -->
-<div class="modal fade" id="modalMantenimiento" tabindex="-1" role="dialog" aria-hidden="true">
+ <div class="modal fade" id="modalMantenimiento" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title" id="modalMantenimientoLabel">Registrar Mantenimiento</h5><button type="button" class="close" data-dismiss="modal">×</button></div>
-            <form id="formMantenimiento" novalidate>
+            <div class="modal-header"><h5 class="modal-title" id="modalMantenimientoLabel"></h5><button type="button" class="close" data-dismiss="modal">×</button></div>
+            <form id="formMantenimiento" autocomplete="off" novalidate>
                 <input type="hidden" name="id_mantenimientos" value="0">
                 <input type="hidden" name="accion" value="agregar">
                 <div class="modal-body">
                     <div class="row">
-                        <!-- Columna Izquierda: Datos y Detalles -->
                         <div class="col-lg-8">
                             <h6>1. Datos Generales de la Moto</h6>
                             <div class="card p-3 mb-3">
                                 <div class="row">
-                                    <div class="col-md-5 form-group"><label>Seleccione Placa y Dueño</label>
-                                        <select class="form-control" name="id_placa" required>
-                                            <option value="">-- Seleccione una moto --</option>
-                                            <?php while($moto = $motos_result->fetch_assoc()): ?>
-                                            <option value="<?php echo htmlspecialchars($moto['id_placa']); ?>"><?php echo htmlspecialchars($moto['id_placa']) . ' - ' . htmlspecialchars($moto['nombre']); ?></option>
-                                            <?php endwhile; ?>
-                                        </select><div class="invalid-feedback"></div>
+                                    <!-- ¡CAMBIO! De <select> a <input> para buscar motos -->
+                                    <div class="col-md-5 form-group">
+                                        <label>Buscar Placa o Dueño (mín. 2 letras)</label>
+                                        <input type="text" class="form-control" id="inputBuscarMoto" placeholder="Escribe la placa o nombre..." required>
+                                        <input type="hidden" name="id_placa"> <!-- Campo para guardar la placa seleccionada -->
+                                        <div id="resultadosBusquedaMoto" class="list-group mt-1 position-absolute w-100" style="z-index: 1051;"></div>
+                                        <div class="invalid-feedback">Debe seleccionar una moto de la lista.</div>
                                     </div>
                                     <div class="col-md-4 form-group"><label>Fecha Realizado</label><input type="datetime-local" class="form-control" name="fecha_realizo" required><div class="invalid-feedback"></div></div>
                                     <div class="col-md-3 form-group"><label>Kilometraje</label><input type="number" class="form-control" name="kilometraje" placeholder="Ej: 25000" required><div class="invalid-feedback"></div></div>

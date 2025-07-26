@@ -28,10 +28,10 @@ RewriteRule ^(conecct|vendor)/.*$ - [F,L]
     Satisfy All
 </FilesMatch>
 
-# --- PATRÓN FRONT CONTROLLER (OPCIONAL PERO RECOMENDADO) ---
+# --- PATRÓN FRONT CONTROLLER ---
 # Redirige todas las peticiones que NO son a archivos o directorios existentes
-# a un único punto de entrada (login.php). Esto centraliza tu aplicación.
+# a un único punto de entrada (index.php). Esto centraliza tu aplicación.
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-# Si estás fuera del login, redirige todo a login.php
-RewriteRule . login.php [L]
+# Si estás fuera del login, redirige todo a index.php
+RewriteRule . index.php [L]

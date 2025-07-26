@@ -7,7 +7,7 @@
         <!-- Menú desplegable para generar reportes -->
         <div class="dropdown">
             <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalReporte">
-                <i class="fas fa-download fa-sm text-white-50"></i> Generar Reporte de Actividad
+                <i class="fas fa-download fa-sm text-white-50"></i> Generar Reporte de Mantenimientos
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                 <a class="dropdown-item" href="reportes/reporte_dia.php?formato=excel"><i class="fas fa-file-excel"></i> Exportar a Excel</a>
@@ -81,28 +81,35 @@
         </div>
     </div>
 
-    <!-- Fila de Auditoría -->
+    <!-- Fila de mantenimientos diarios -->
     <div class="row">
-        <div class="col-lg-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Movimientos Diaros del Sistema</h6></div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped" id="tablaAuditoria" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>Fecha y Hora</th>
-                                    <th>Módulo</th>
-                                    <th>Acción</th>
-                                    <th>Descripción</th>
-                                    <th>Realizado por:</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Contenido se llenará con JS -->
-                            </tbody>
-                        </table>
-                    </div>
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Mantenimientos Realizados Hoy</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="tablaMantenimientosDia" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Hora</th>
+                                <th>Placa</th>
+                                <th>Cliente</th>
+                                <th>Detalles de Trabajos</th>
+                                <th class="text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Contenido se llenará con JS -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="4" style="text-align:right">Total del Día:</th>
+                                <th class="text-right" id="totalMantenimientosDia"></th>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
         </div>

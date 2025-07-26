@@ -1,22 +1,40 @@
 <?php
+/**
+ * Procesamiento de operaciones CRUD para administradores
+ * 
+ * Este archivo maneja todas las operaciones relacionadas con los administradores:
+ * - Crear nuevo administrador
+ * - Leer datos de administrador
+ * - Actualizar información de administrador
+ * - Eliminar administrador
+ */
+
 session_start();
 header('Content-Type: application/json');
-
 
 require_once __DIR__ . '/../../conecct/conex.php';
 
 $db = new Database();
 $conexion = $db->conectar(); 
 
-// Establecer la variable de sesión de MySQL para los Triggers
+// Configuración para Triggers: Establece el ID del administrador actual para auditoría
 $id_admin_actual = $_SESSION['id_documento'] ?? 'sistema';
 $stmt_session_var = $conexion->prepare("SET @current_admin_id = ?");
 $stmt_session_var->execute([$id_admin_actual]);
 
+// Determinar la acción a realizar (POST tiene prioridad sobre GET)
 $accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
 
 switch ($accion) {
     case 'agregar':
+        /**
+         * Proceso de creación de nuevo administrador
+         * 
+         * Validaciones:
+         * 1. Campos requeridos
+         * 2. Documento no existe como cliente
+         * 3. No hay duplicados en administradores (documento, email, teléfono)
+         */
         if (empty($_POST['documento']) || empty($_POST['nombre']) || empty($_POST['email']) || empty($_POST['telefono']) || empty($_POST['password'])) {
             echo json_encode(['status' => 'error', 'message' => 'Todos los campos son obligatorios.']);
             exit;
@@ -54,6 +72,10 @@ switch ($accion) {
         break;
 
     case 'obtener':
+        /**
+         * Obtiene los datos de un administrador específico
+         * Nota: No devuelve la contraseña por seguridad
+         */
         $id = $_GET['id'] ?? 0;
         $stmt = $conexion->prepare("SELECT id_documento, nombre, email, telefono FROM administradores WHERE id_documento = :id");
         $stmt->execute([':id' => $id]);
@@ -62,18 +84,28 @@ switch ($accion) {
         break;
 
     case 'actualizar':
+        /**
+         * Actualización de datos de administrador
+         * 
+         * Características:
+         * - Actualización selectiva de campos
+         * - Construcción dinámica de la consulta SQL
+         * - Validación de duplicados excluyendo el registro actual
+         * - Actualización opcional de contraseña
+         */
         $id = $_POST['id_documento'] ?? '';
         $nombre = $_POST['nombre'] ?? '';
         $email = $_POST['email'] ?? '';
         $telefono = $_POST['telefono'] ?? '';
         $password = $_POST['password'] ?? '';
 
+        // Validación de campos obligatorios
         if (empty($id) || empty($nombre) || empty($email) || empty($telefono)) {
             echo json_encode(['status' => 'error', 'message' => 'Los campos obligatorios no pueden estar vacíos.']);
             exit;
         }
 
-        // Validar duplicados
+        // Verificación de duplicados excluyendo el registro actual
         $stmt = $conexion->prepare("SELECT nombre FROM administradores WHERE (nombre = :nombre OR email = :email OR telefono = :telefono) AND id_documento != :id");
         $stmt->execute([':nombre' => $nombre, ':email' => $email, ':telefono' => $telefono, ':id' => $id]);
         if ($stmt->fetch()) {
@@ -81,10 +113,15 @@ switch ($accion) {
             exit;
         }
         
-        // Construcción de la consulta de actualización
+        /**
+         * Construcción dinámica de la consulta SQL
+         * - Base: Actualiza campos obligatorios
+         * - Opcional: Añade actualización de contraseña si se proporciona
+         */
         $sql = "UPDATE administradores SET nombre = :nombre, email = :email, telefono = :telefono";
         $params = [':nombre' => $nombre, ':email' => $email, ':telefono' => $telefono];
 
+        // Añadir contraseña a la actualización solo si se proporciona una nueva
         if (!empty($password)) {
             $sql .= ", password = :password";
             $params[':password'] = password_hash($password, PASSWORD_DEFAULT);
@@ -103,6 +140,14 @@ switch ($accion) {
         break;
 
     case 'eliminar':
+        /**
+         * Eliminación de administrador
+         * 
+         * Importante: Verificar antes de implementar si:
+         * - Se requiere eliminación lógica en lugar de física
+         * - Hay restricciones de foreign key que considerar
+         * - Se necesita respaldo de los datos antes de eliminar
+         */
         $id = $_POST['id'] ?? 0;
         if (empty($id)) {
             echo json_encode(['status' => 'error', 'message' => 'ID no proporcionado.']);

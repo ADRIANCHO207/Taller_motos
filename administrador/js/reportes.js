@@ -9,6 +9,7 @@ $(document).ready(function() {
     // ¡CONFIGURACIÓN!
     const configFiltros = {
         'actividad': ['fechas', 'texto'],
+        'mantenimiento_de_hoy': [],
         'mantenimientos': ['fechas', 'texto'],
         'clientes': ['fechas', 'texto'],
         'motos': ['texto'],
@@ -48,9 +49,9 @@ $(document).ready(function() {
     let params = { tipo: tipo };
 
     // --- VALIDACIÓN DE FECHAS ---
-    if ($('#filtro_fechas').is(':visible')) {
-        const inicio = $('[name="inicio"]').val();
-        const fin = $('[name="fin"]').val();
+   if ($('#filtro_fechas').is(':visible')) {
+            const inicio = $('[name="inicio"]').val();
+            const fin = $('[name="fin"]').val();
         
         // Obtener la fecha de hoy en formato YYYY-MM-DD
         const hoy = new Date().toISOString().split('T')[0];

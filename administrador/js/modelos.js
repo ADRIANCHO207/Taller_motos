@@ -71,7 +71,7 @@ $(document).ready(function() {
     });
 
     // ==========================================================
-
+    // Lógica para agregar un nuevo modelo
     formAgregar.on('submit', function(e) {
         e.preventDefault();
         const input = formAgregar.find('[name="anio"]');
@@ -93,7 +93,7 @@ $(document).ready(function() {
     });
 
     // ==========================================================
-
+    // Lógica para editar un modelo
     $('#dataTableAnios tbody').on('click', '.btn-editar', function() {
         const id = $(this).data('id');
         const valor = $(this).data('valor');
@@ -119,6 +119,7 @@ $(document).ready(function() {
     });
 
     // ==========================================================
+    // Lógica para eliminar un modelo
     let idParaEliminar;
     $('#dataTableAnios tbody').on('click', '.btn-eliminar', function() {
         idParaEliminar = $(this).data('id');

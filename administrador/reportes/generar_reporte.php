@@ -37,6 +37,27 @@ $config_reportes = [
         'pdf_widths' => [40, 30, 35, 132, 40] // Anchos para 5 columnas
     ],
 
+    'mantenimiento_de_hoy' => [
+        'titulo' => 'Reporte de Mantenimientos del Día',
+        'sql' => "
+            SELECT 
+                m.id_mantenimientos, m.id_placa, c.nombre AS cliente, 
+                m.fecha_realizo, m.kilometraje,
+                GROUP_CONCAT(CONCAT(tt.detalle, ' (Cant: ', dm.cantidad, ')') SEPARATOR '\n') AS detalles_trabajos,
+                m.total
+            FROM mantenimientos m 
+            JOIN motos mo ON m.id_placa = mo.id_placa 
+            JOIN clientes c ON mo.id_documento_cli = c.id_documento_cli
+            LEFT JOIN detalle_mantenimientos dm ON m.id_mantenimientos = dm.id_mantenimiento
+            LEFT JOIN tipo_trabajo tt ON dm.id_tipo_trabajo = tt.id_tipo
+        ",
+        'group_by' => " GROUP BY m.id_mantenimientos",
+        'encabezados' => ['ID', 'Placa', 'Cliente', 'Fecha', 'Kilometraje', 'Trabajos Realizados', 'Total'],
+        'columnas' => ['id_mantenimientos', 'id_placa', 'cliente', 'fecha_realizo', 'kilometraje', 'detalles_trabajos', 'total'],
+        'filtro_fecha_fijo' => 'm.fecha_realizo', 
+        'pdf_widths' => [12, 25, 50, 35, 25, 100, 30]
+    ],
+
    'mantenimientos' => [
         'titulo' => 'Reporte de Mantenimientos',
         'sql' => "
@@ -182,6 +203,11 @@ if (!empty($busqueda) && isset($config['filtro_texto'])) {
         $i++;
     }
     $where[] = "(" . implode(' OR ', $clausulas_like) . ")";
+}
+
+// Filtro de fecha FIJO para el reporte del día actual
+if (isset($config['filtro_fecha_fijo'])) {
+    $where[] = "DATE({$config['filtro_fecha_fijo']}) = CURDATE()";
 }
 
 if (!empty($rango_inicio) && !empty($rango_fin) && isset($config['filtro_rango'])) {
